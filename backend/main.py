@@ -10,7 +10,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",                # local frontend dev
-        "https://your-username.github.io",     # GitHub Pages (optional)
+        "https://atremante26.github.io",        # GitHub Pages
     ],
     allow_credentials=True,
     allow_methods=["*"],
