@@ -1,0 +1,24 @@
+# ----------------------
+# General
+# ----------------------
+.DS_Store
+*.log
+.env
+.vscode/
+.idea/
+
+# ----------------------
+# Python (backend/)
+# ----------------------
+backend/__pycache__/
+backend/*.py[cod]
+backend/venv/
+backend/.env
+
+# ----------------------
+# Node.js (frontend/)
+# ----------------------
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.vite/
