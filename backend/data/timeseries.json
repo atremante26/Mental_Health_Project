@@ -1,0 +1,7 @@
+[
+  { "date": "2025-01-01", "anxiety": 14.2, "depression": 12.1, "sleep_issues": 9.5 },
+  { "date": "2025-01-08", "anxiety": 15.0, "depression": 13.0, "sleep_issues": 10.1 },
+  { "date": "2025-01-15", "anxiety": 16.1, "depression": 13.8, "sleep_issues": 11.3 },
+  { "date": "2025-01-22", "anxiety": 14.8, "depression": 12.9, "sleep_issues": 10.4 },
+  { "date": "2025-01-29", "anxiety": 13.9, "depression": 12.0, "sleep_issues": 9.2 }
+]
