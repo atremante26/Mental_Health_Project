@@ -1,6 +1,7 @@
 from fastapi import FastAPI # import FastAPI framework
 from fastapi.middleware.cors import CORSMiddleware # import CORS middleware to allow cross-origin requests from frontend
-
+import os
+import json
 
 
 app = FastAPI() # Create FastAPI instance
@@ -23,7 +24,7 @@ def health_check():
 
 @app.get("/insights") # Placeholder API endpoint for insights
 def get_insights():
-    return {
-        "summary": "Mental health trends for this week will appear here.",
-        "date_range": "Coming soon"
-    }
+    file_path = os.path.join(os.path.dirname(__file__), "data", "insights.json")
+    with open(file_path, "r") as f:
+        data = json.load(f)
+    return data
