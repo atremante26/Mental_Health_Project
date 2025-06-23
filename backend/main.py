@@ -33,5 +33,5 @@ def get_insights():
 def get_timeseries():
     file_path = os.path.join(os.path.dirname(__file__), "data", "timeseries.json")
     with open(file_path, "r") as f:
-        data = json.load
+        data = json.load(f)
     return data
