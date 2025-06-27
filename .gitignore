@@ -6,13 +6,14 @@
 .env
 .vscode/
 .idea/
+venv/
+.python-version
 
 # ----------------------
 # Python (backend/)
 # ----------------------
 backend/__pycache__/
 backend/*.py[cod]
-backend/venv/
 backend/.env
 
 # ----------------------
