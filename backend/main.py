@@ -31,7 +31,10 @@ def get_insights():
 
 @app.get("/timeseries")
 def get_timeseries():
-    file_path = os.path.join(os.path.dirname(__file__), "data", "timeseries.json")
-    with open(file_path, "r") as f:
-        data = json.load(f)
-    return data
+    file_path = os.path.join(os.path.dirname(__file__), "../data/processed/cdc_timeseries.json")
+    try:
+        with open(file_path, "r") as f:
+            data = json.load(f)
+        return data
+    except Exception as e:
+        return {"error": f"Could not load timeseries data: {e}"}
