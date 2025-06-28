@@ -14,12 +14,11 @@ venv/
 # ----------------------
 backend/__pycache__/
 backend/*.py[cod]
-backend/.env
+data/
 
 # ----------------------
 # Node.js (frontend/)
 # ----------------------
 frontend/node_modules/
 frontend/dist/
-frontend/.env
 frontend/.vite/
