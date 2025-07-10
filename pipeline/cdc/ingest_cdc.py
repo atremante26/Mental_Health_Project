@@ -40,7 +40,7 @@ def clean_cdc_data():
     raw_filename = f"cdc_raw_{today}.csv"
     raw_local_path = os.path.join(RAW_DIR, raw_filename)
     df.to_csv(raw_local_path, index=False)
-    upload_to_s3(raw_local_path, f"raw/{raw_filename}")
+    upload_to_s3(raw_local_path, f"cdc-raw/{raw_filename}")
 
     # Filter
     df = df[(df['Group'] == 'National Estimate') & (df['Subgroup'] == 'United States')]
@@ -62,10 +62,10 @@ def clean_cdc_data():
             df[col] = df[col].round(1)
 
     # Step 5: Save processed JSON
-    processed_filename = f"cdc_timeseries_{today}.json"
+    processed_filename = f"cdc_processed_{today}.json"
     processed_local_path = os.path.join(PROCESSED_DIR, processed_filename)
     df.to_json(processed_local_path, orient="records", indent=2)
-    upload_to_s3(processed_local_path, f"processed/{processed_filename}")
+    upload_to_s3(processed_local_path, f"cdc-processed/{processed_filename}")
 
 if __name__ == "__main__":
     clean_cdc_data()
