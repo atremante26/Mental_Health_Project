@@ -53,7 +53,7 @@ def clean_cdc_data():
     df = df.rename(columns={
         'Symptoms of Anxiety Disorder': 'anxiety',
         'Symptoms of Depressive Disorder': 'depression',
-        'Symptoms of Anxiety or Depressive Disorder': 'anxiety_or_depression'
+        'Symptoms of Anxiety Disorder or Depressive Disorder': 'anxiety_or_depression'
     })
     df = df.dropna()
 
