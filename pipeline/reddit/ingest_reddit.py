@@ -14,7 +14,7 @@ reddit = praw.Reddit(
 )
 
 # Target subreddits
-subreddits = ["mentalhealth", "depression", "Anxiety"]
+subreddits = ["mentalhealth", "depression", "anxiety", "ADHD", "BPD", "suicidewatch", "mentalillness", "CPTSD", "socialanxiety", "OCD", "psychotherapy", "decidingtobebetter", "selfimprovement"]
 
 # Collect posts
 all_posts = []
