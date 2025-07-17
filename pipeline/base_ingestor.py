@@ -7,11 +7,12 @@ from datetime import datetime
 from io import BytesIO
 from typing import Optional
 import pandas as pd
+from dotenv import load_dotenv
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 class BaseIngestor(ABC):
     def __init__(self):
