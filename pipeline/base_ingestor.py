@@ -67,7 +67,7 @@ class BaseIngestor(ABC):
         self.s3.upload_fileobj(buffer, self.S3_BUCKET, s3_key)
         logger.info(f"Uploaded {suffix} data to s3://{self.S3_BUCKET}/{s3_key}")
 
-    def run(self, name: str, s3_folder: Optional[str], save_local: bool = False):
+    def run(self, name: str, save_s3: bool = True, save_local: bool = False):
         """Main ingestion pipeline logic"""
         # Load data
         raw_df = self.load_data()
@@ -75,8 +75,9 @@ class BaseIngestor(ABC):
         # Save raw (local + S3)
         if save_local:
             self.save_raw(raw_df, name)
-        if s3_folder:
-            self.upload(raw_df, name, s3_folder, is_processed=False)
+        if save_s3:
+            s3_raw_folder_name = f"{name}_raw"
+            self.upload(raw_df, name, s3_raw_folder_name, is_processed=False)
 
         # Process data
         processed_df = self.process_data(raw_df)
@@ -84,5 +85,6 @@ class BaseIngestor(ABC):
         # Save processed (local + S3)
         if save_local:
             self.save_processed(processed_df, name)
-        if s3_folder:
-            self.upload(processed_df, name, s3_folder, is_processed=True)
+        if save_s3:
+            s3_processed_folder_name = f"{name}_processed"
+            self.upload(processed_df, name, s3_processed_folder_name, is_processed=True)
