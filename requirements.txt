@@ -18,3 +18,4 @@ apache-airflow-providers-amazon==8.14.0
 apache-airflow-providers-http==4.7.0     
 boto3
 praw==7.8.1
+pytrends==4.9.0
