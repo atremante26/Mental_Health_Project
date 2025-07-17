@@ -20,7 +20,6 @@ class RedditIngestor(BaseIngestor):
         self.subreddits = ["mentalhealth", "depression", "anxiety"]
     
     def load_data(self):
-
         try:
             # Collect posts
             posts = []
