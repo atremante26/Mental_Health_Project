@@ -19,3 +19,5 @@ apache-airflow-providers-http==4.7.0
 boto3
 praw==7.8.1
 pytrends==4.9.0
+snowflake-connector-python>=3.4.0,<4.0.0
+snowflake-sqlalchemy>=1.4.7,<2.0.0

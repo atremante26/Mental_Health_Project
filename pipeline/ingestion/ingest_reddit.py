@@ -1,4 +1,4 @@
-from pipeline import BaseIngestor
+from pipeline.ingestion import BaseIngestor
 import os
 from datetime import datetime, timezone, timedelta
 import logging

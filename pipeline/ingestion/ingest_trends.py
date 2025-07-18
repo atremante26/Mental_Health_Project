@@ -1,4 +1,4 @@
-from pipeline import BaseIngestor
+from pipeline.ingestion import BaseIngestor
 import logging
 from pytrends.request import TrendReq
 import pandas as pd

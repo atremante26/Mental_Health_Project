@@ -1,4 +1,4 @@
-from pipeline import BaseIngestor
+from pipeline.ingestion import BaseIngestor
 import logging
 import pandas as pd
 
