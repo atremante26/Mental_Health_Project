@@ -5,7 +5,7 @@ CREATE OR REPLACE TEMP TABLE TEMP_REDDIT_DATES(date DATE);
 COPY INTO TEMP_REDDIT_DATES
 FROM (
   SELECT TO_DATE($1:date::STRING)
-  FROM @reddit_stage/reddit-processed/reddit_processed_{{ ds_nodash }}.json (file_format => reddit_json_format)
+  FROM @reddit_stage/reddit_processed_{{ ds_nodash }}.json (file_format => reddit_json_format)
 );
 
 -- Delete any existing rows in the main table that match incoming dates
@@ -14,7 +14,7 @@ WHERE date IN (SELECT date FROM TEMP_REDDIT_DATES);
 
 -- Load the new data
 COPY INTO MENTAL_HEALTH.REDDIT.REDDIT_PROCESSED
-FROM @reddit_stage/reddit-processed/reddit_processed_{{ ds_nodash }}.json
+FROM @reddit_stage/reddit_processed_{{ ds_nodash }}.json
 FILE_FORMAT = (FORMAT_NAME = 'reddit_json_format')
 MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE;
 
