@@ -4,6 +4,11 @@ from datetime import datetime, timedelta
 from pipeline.ingestion.ingest_cdc import CDCIngestor
 from pipeline.ingestion.ingest_reddit import RedditIngestor
 from pipeline.ingestion.ingest_trends import GoogleTrendsIngestor
+from pipeline.snowflake.load_snowflake import (
+    load_cdc_to_snowflake,
+    load_reddit_to_snowflake,
+    load_trends_to_snowflake
+)
 
 default_args = {
     'owner': 'andrew',
@@ -43,3 +48,22 @@ with DAG(
         task_id='ingest_trends',
         python_callable=run_trends
     )
+
+    load_cdc_task = PythonOperator(
+        task_id='load_cdc_to_snowflake',
+        python_callable=load_cdc_to_snowflake
+    )
+
+    load_reddit_task = PythonOperator(
+        task_id='load_reddit_to_snowflake',
+        python_callable=load_reddit_to_snowflake
+    )
+
+    load_trends_task = PythonOperator(
+        task_id='load_trends_to_snowflake',
+        python_callable=load_trends_to_snowflake
+    )
+
+    ingest_cdc_task >> load_cdc_task
+    ingest_reddit_task >> load_reddit_task
+    ingest_trends_task >> load_trends_task

@@ -26,12 +26,14 @@ services:
       AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      PYTHONPATH: /opt/airflow
     volumes:
       - ./dags:/opt/airflow/dags
       - ../pipeline:/opt/airflow/pipeline
+      - ../requirements.txt:/requirements.txt 
     ports:
       - "8080:8080"
-    command: webserver
+    command: bash -c "pip install -r /requirements.txt && airflow webserver"
 
   airflow-scheduler:
     image: apache/airflow:2.9.1-python3.9
@@ -44,10 +46,12 @@ services:
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+      PYTHONPATH: /opt/airflow
     volumes:
       - ./dags:/opt/airflow/dags
       - ../pipeline:/opt/airflow/pipeline
-    command: scheduler
+      - ../requirements.txt:/requirements.txt 
+    command: bash -c "pip install -r /requirements.txt && airflow scheduler"
 
   airflow-worker:
     image: apache/airflow:2.9.1-python3.9
@@ -60,10 +64,12 @@ services:
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+      PYTHONPATH: /opt/airflow
     volumes:
       - ./dags:/opt/airflow/dags
       - ../pipeline:/opt/airflow/pipeline
-    command: celery worker
+      - ../requirements.txt:/requirements.txt 
+    command: bash -c "pip install -r /requirements.txt && airflow celery worker"
 
 volumes:
   postgres-db-volume:
