@@ -27,6 +27,7 @@ services:
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       PYTHONPATH: /opt/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: "Etx684jFCwof8lADNZ8quOGEbG_eo6kh7HgFnKqbs8k"
     volumes:
       - ./dags:/opt/airflow/dags
       - ../pipeline:/opt/airflow/pipeline
@@ -47,6 +48,7 @@ services:
       AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
       PYTHONPATH: /opt/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: "Etx684jFCwof8lADNZ8quOGEbG_eo6kh7HgFnKqbs8k"
     volumes:
       - ./dags:/opt/airflow/dags
       - ../pipeline:/opt/airflow/pipeline
@@ -65,6 +67,7 @@ services:
       AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
       PYTHONPATH: /opt/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: "Etx684jFCwof8lADNZ8quOGEbG_eo6kh7HgFnKqbs8k"
     volumes:
       - ./dags:/opt/airflow/dags
       - ../pipeline:/opt/airflow/pipeline

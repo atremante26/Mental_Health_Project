@@ -73,11 +73,18 @@ class BaseIngestor(ABC):
         # Load data
         raw_df = self.load_data()
 
+        # Determine folder naming convention
+        if name in ["cdc", "reddit"]:
+            s3_raw_folder_name = f"{name}-raw"
+            s3_processed_folder_name = f"{name}-processed"
+        else:
+            s3_raw_folder_name = f"{name}_raw"
+            s3_processed_folder_name = f"{name}_processed"
+
         # Save raw (local + S3)
         if save_local:
             self.save_raw(raw_df, name)
         if save_s3:
-            s3_raw_folder_name = f"{name}_raw"
             self.upload(raw_df, name, s3_raw_folder_name, is_processed=False)
 
         # Process data
@@ -87,5 +94,4 @@ class BaseIngestor(ABC):
         if save_local:
             self.save_processed(processed_df, name)
         if save_s3:
-            s3_processed_folder_name = f"{name}_processed"
             self.upload(processed_df, name, s3_processed_folder_name, is_processed=True)
