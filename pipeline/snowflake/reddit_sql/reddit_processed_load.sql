@@ -1,3 +1,6 @@
+-- Use Reddit Schema
+USE SCHEMA MENTAL_HEALTH.REDDIT;
+
 -- Create a temporary table to hold new dates
 CREATE OR REPLACE TEMP TABLE TEMP_REDDIT_DATES(date DATE);
 

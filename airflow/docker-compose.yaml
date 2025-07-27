@@ -32,6 +32,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ../pipeline:/opt/airflow/pipeline
       - ../requirements.txt:/requirements.txt 
+      - ./keys:/opt/airflow/keys 
     ports:
       - "8080:8080"
     command: bash -c "pip install -r /requirements.txt && airflow webserver"
@@ -53,6 +54,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ../pipeline:/opt/airflow/pipeline
       - ../requirements.txt:/requirements.txt 
+      - ./keys:/opt/airflow/keys 
     command: bash -c "pip install -r /requirements.txt && airflow scheduler"
 
   airflow-worker:
@@ -72,6 +74,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ../pipeline:/opt/airflow/pipeline
       - ../requirements.txt:/requirements.txt 
+      - ./keys:/opt/airflow/keys 
     command: bash -c "pip install -r /requirements.txt && airflow celery worker"
 
 volumes:
