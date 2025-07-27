@@ -1,5 +1,5 @@
 -- Use Trends Schema
-USE SCHEMA MENTAL_HEALTH.TRENDS;
+USE SCHEMA MENTAL_HEALTH.GOOGLE_TRENDS;
 
 -- Create a temporary table to hold new dates
 CREATE OR REPLACE TEMP TABLE TEMP_TRENDS_DATES(date DATE);
