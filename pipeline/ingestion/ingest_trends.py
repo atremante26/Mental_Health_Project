@@ -22,9 +22,6 @@ class GoogleTrendsIngestor(BaseIngestor):
             try:
                 self.pytrends.build_payload(group, timeframe='today 3-m', geo='US')
                 group_data = self.pytrends.interest_over_time()
-                print(f"Group {group}:")
-                print(f"Date range: {group_data.index.min()} to {group_data.index.max()}")
-                print(f"Shape: {group_data.shape}")
                 if not group_data.empty:
                     raw_data_frames.append(group_data)
             except:
