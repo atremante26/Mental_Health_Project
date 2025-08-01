@@ -29,6 +29,9 @@ def snowflake_connection():
 def run_sql_from_file(filepath: str, date: str):
     with open(filepath, "r") as f:
         sql_content = f.read().replace("{{ ds_nodash }}", date)
+        print(f"=== DATE BEING SUBSTITUTED: {date} ===")
+        print(f"=== FINAL SQL CONTENT: ===")
+        print(sql_content)
         
         # Split by semicolon into individual statements
         statements = [stmt.strip() for stmt in sql_content.split(';') if stmt.strip()]
