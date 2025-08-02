@@ -29,28 +29,24 @@ def snowflake_connection():
 def run_sql_from_file(filepath: str, date: str):
     with open(filepath, "r") as f:
         sql_content = f.read().replace("{{ ds_nodash }}", date)
-        print(f"=== DATE BEING SUBSTITUTED: {date} ===")
-        print(f"=== FINAL SQL CONTENT: ===")
-        print(sql_content)
         
-        # Split by semicolon into individual statements
         statements = [stmt.strip() for stmt in sql_content.split(';') if stmt.strip()]
         
         with snowflake_connection().cursor() as cur:
-            for statement in statements: 
+            for statement in statements:
                 cur.execute(statement)
 
 # Loaders for each dataset
 def load_reddit_to_snowflake():
-    today = datetime.today().strftime("%Y%m%d")
+    today = datetime.today().strftime("%Y-%m-%d")
     run_sql_from_file("pipeline/snowflake/reddit_sql/reddit_processed_load.sql", today)
 
 def load_cdc_to_snowflake():
-    today = datetime.today().strftime("%Y%m%d")
+    today = datetime.today().strftime("%Y-%m-%d")
     run_sql_from_file("pipeline/snowflake/cdc_sql/cdc_processed_load.sql", today)
 
 def load_trends_to_snowflake():
-    today = datetime.today().strftime("%Y%m%d")
+    today = datetime.today().strftime("%Y-%m-%d")
     run_sql_from_file("pipeline/snowflake/trends_sql/trends_processed_load.sql", today)
 
 if __name__ == "__main__":
