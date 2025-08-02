@@ -29,9 +29,7 @@ def snowflake_connection():
 def run_sql_from_file(filepath: str, date: str):
     with open(filepath, "r") as f:
         sql_content = f.read().replace("{{ ds_nodash }}", date)
-        
         statements = [stmt.strip() for stmt in sql_content.split(';') if stmt.strip()]
-        
         with snowflake_connection().cursor() as cur:
             for statement in statements:
                 cur.execute(statement)
