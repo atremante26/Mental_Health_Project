@@ -1,19 +1,61 @@
-from pipeline.ingestion import BaseIngestor
+from pipeline.snowflake.load_snowflake import run_sql_from_file
 import logging
+from datetime import datetime
 import pandas as pd
+from abc import ABC, abstractmethod
+from dotenv import load_dotenv
 import boto3
 import os
+load_dotenv()
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class MentalHealthInTechSurveyIngestor(BaseIngestor):
+class StaticIngestor(ABC):
+    def __init__(self):
+
+        # S3 config
+        self.S3_BUCKET = "mental-health-project-pipeline"
+        self.s3 = boto3.client(
+            "s3",
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+        )
+
+    @abstractmethod
+    def load_data(self) -> pd.DataFrame:
+        """Fetch or load raw data from a data source"""
+        pass
+
+    @abstractmethod
+    def process_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Clean and transform raw data"""
+        pass
+
+    @abstractmethod
+    def load_static_to_snowflake(self):
+        """Load static data sources to Snowflake"""
+        pass
+
+    def run(self, name: str):
+        """Main loading, processing, and saving logic"""
+        # Load data
+        raw_df = self.load_data()
+        processed_df = self.process_data(raw_df)
+        
+
+
+
+class MentalHealthInTechSurveyIngestor(StaticIngestor):
     def __init__(self):
         super().__init__()
 
     def load_data(self):
         try:
             response = self.s3.get_object(
-                Bucket='mental-health-project-pipeline',
+                Bucket=self.S3_BUCKET,
                 Key='static_data/raw/mental_health_in_tech_survey.csv'
             )
             df = pd.read_csv(response['Body'])
@@ -46,15 +88,19 @@ class MentalHealthInTechSurveyIngestor(BaseIngestor):
         logger.info(f"Processed Mental Health in Tech Survey data: {len(df)} rows")
         
         return df
+    
+    def load_static_to_snowflake(self):
+        today = datetime.today().strftime("%Y-%m-%d")
+        run_sql_from_file()
 
-class WHOSuicideStatisticsIngestor(BaseIngestor):
+class WHOSuicideStatisticsIngestor(StaticIngestor):
     def __init__(self):
         super().__init__()
     
     def load_data(self):
         try:
             response = self.s3.get_object(
-                Bucket='mental-health-project-pipeline',
+                Bucket=self.S3_BUCKET,
                 Key='static_data/raw/who_suicide_statistics.csv'
             )
             df = pd.read_csv(response['Body'])
@@ -86,14 +132,18 @@ class WHOSuicideStatisticsIngestor(BaseIngestor):
 
         return df
     
-class MentalHealthCareInLast4WeeksIngestor(BaseIngestor):
+    def load_static_to_snowflake(self):
+        today = datetime.today().strftime("%Y-%m-%d")
+        run_sql_from_file()
+    
+class MentalHealthCareInLast4WeeksIngestor(StaticIngestor):
     def __init__(self):
         super().__init__()
 
     def load_data(self):
         try:
             response = self.s3.get_object(
-                Bucket='mental-health-project-pipeline',
+                Bucket=self.S3_BUCKET,
                 Key='static_data/raw/mental_health_care_in_the_last_4_weeks.csv'
             )
             df = pd.read_csv(response['Body'])
@@ -118,15 +168,19 @@ class MentalHealthCareInLast4WeeksIngestor(BaseIngestor):
         logger.info(f"Processed Mental Health Care in Last 4 Weeks data: {len(df)} rows")
 
         return df
+    
+    def load_static_to_snowflake(self):
+        today = datetime.today().strftime("%Y-%m-%d")
+        run_sql_from_file()
 
-class SuicideByDemographicsIngestor(BaseIngestor):
+class SuicideByDemographicsIngestor(StaticIngestor):
     def __init__(self):
         super().__init__()
     
     def load_data(self):
         try:
             response = self.s3.get_object(
-                Bucket='mental-health-project-pipeline',
+                Bucket=self.S3_BUCKET,
                 Key='static_data/raw/death_rates_for_suicide_by_sex_race_hispanic_origin_and_age_united_states.csv'
             )
             df = pd.read_csv(response['Body'])
@@ -160,6 +214,10 @@ class SuicideByDemographicsIngestor(BaseIngestor):
         logger.info(f"Processed Death Rates for Suicide by Demographic data: {len(df)} rows")
 
         return df
+    
+    def load_static_to_snowflake(self):
+        today = datetime.today().strftime("%Y-%m-%d")
+        run_sql_from_file()
 
         
 

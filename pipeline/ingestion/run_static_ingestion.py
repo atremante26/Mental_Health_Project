@@ -1,0 +1,4 @@
+from static_ingestor import MentalHealthInTechSurveyIngestor, WHOSuicideStatisticsIngestor, MentalHealthCareInLast4WeeksIngestor, SuicideByDemographicsIngestor
+
+def run_all_static_sources():
+    MentalHealthInTechSurveyIngestor.run()
