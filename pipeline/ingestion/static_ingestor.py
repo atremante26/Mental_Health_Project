@@ -6,13 +6,6 @@ import os
 
 logger = logging.getLogger(__name__)
 
-s3 = boto3.client(
-    "s3",
-    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-    region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
-)
-
 class MentalHealthInTechSurveyIngestor(BaseIngestor):
     def __init__(self):
         super().__init__()
@@ -26,7 +19,7 @@ class MentalHealthInTechSurveyIngestor(BaseIngestor):
             df = pd.read_csv(response['Body'])
             return df
         except Exception as e:
-            logger.error(f"Failed to load mental health in tech survey data from S3: {e}")
+            logger.error(f"Failed to load Mental Health in Tech Survey data from S3: {e}")
             return pd.DataFrame() 
     
     def process_data(self, df: pd.DataFrame):
@@ -49,6 +42,8 @@ class MentalHealthInTechSurveyIngestor(BaseIngestor):
 
         # Convert column to datetime type
         df['survey_date'] = pd.to_datetime(df['Timestamp']).dt.date
+
+        logger.info(f"Processed Mental Health in Tech Survey data: {len(df)} rows")
         
         return df
 
@@ -65,16 +60,29 @@ class WHOSuicideStatisticsIngestor(BaseIngestor):
             df = pd.read_csv(response['Body'])
             return df
         except Exception as e:
-            logger.error(f"Failed to load WHO suicide statistics from S3: {e}")
+            logger.error(f"Failed to load WHO Suicide Statistics data from S3: {e}")
             return pd.DataFrame() 
 
     def process_data(self, df: pd.DataFrame):
-        # Reformat sex column
+        # Reformat and clean sex column
         gender_mapping = {"male": "Male", "female": "Female"}
+        df["sex"] = df["sex"].str.lower().str.strip() 
         df["sex"] = df["sex"].map(gender_mapping)
 
         # Fill NA values in suicide_no with 0
         df["suicides_no"] = df["suicides_no"].fillna(0)
+
+        # Clean country name
+        df["country"] = df["country"].str.strip()
+
+        # Suicide rate per 100k population
+        df["suicide_rate_per_100k"] = (df["suicides_no"] / df["population"]) * 100000
+
+        # Data validation
+        df = df[df["year"] > 1900] 
+        df = df[df["population"] > 0]
+
+        logger.info(f"Processed WHO Suicide Statistics data: {len(df)} rows")
 
         return df
     
@@ -91,7 +99,7 @@ class MentalHealthCareInLast4WeeksIngestor(BaseIngestor):
             df = pd.read_csv(response['Body'])
             return df
         except Exception as e:
-            logger.error(f"Failed to load mental health care in last 4 weeks from S3: {e}")
+            logger.error(f"Failed to load Mental Health Care in Last 4 Weeks data from S3: {e}")
             return pd.DataFrame() 
 
     def process_data(self, df: pd.DataFrame):
@@ -107,7 +115,54 @@ class MentalHealthCareInLast4WeeksIngestor(BaseIngestor):
         df['Group'] = df['Group'].str.strip()
         df['Subgroup'] = df['Subgroup'].str.strip()
 
+        logger.info(f"Processed Mental Health Care in Last 4 Weeks data: {len(df)} rows")
+
         return df
+
+class SuicideByDemographicsIngestor(BaseIngestor):
+    def __init__(self):
+        super().__init__()
+    
+    def load_data(self):
+        try:
+            response = self.s3.get_object(
+                Bucket='mental-health-project-pipeline',
+                Key='static_data/raw/death_rates_for_suicide_by_sex_race_hispanic_origin_and_age_united_states.csv'
+            )
+            df = pd.read_csv(response['Body'])
+            return df
+        except Exception as e:
+            logger.error(f"Failed to load Death Rates for Suicide by Demographic data from S3: {e}")
+            return pd.DataFrame()
         
+    def process_data(self, df: pd.DataFrame):
+        # Clean column names
+        df.columns = df.columns.str.lower().str.strip()
+
+        # Drop redundant 'num' columns
+        df = df.drop(columns=['unit_num', 'stub_name_num', 'stub_label_num', 
+                             'year_num', 'age_num'], errors='ignore')
+
+        # Clean categorical columns
+        df['indicator'] = df['indicator'].str.strip() 
+        df['unit'] = df['unit'].str.strip() 
+        df['stub_name'] = df['stub_name'].str.strip()
+        df['stub_label'] = df['stub_label'].str.strip() 
+        df['age'] = df['age'].str.strip()
+
+        # Improve column names
+        df['demographic_category'] = df['stub_name']
+        df['demographic_value'] = df['stub_label'] 
+
+        # Data validation
+        df = df[df['year'] >= 1950]  
+
+        logger.info(f"Processed Death Rates for Suicide by Demographic data: {len(df)} rows")
+
+        return df
+
+        
+
+
 
 
