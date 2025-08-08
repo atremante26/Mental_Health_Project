@@ -1,6 +1,5 @@
-from pipeline.snowflake.load_snowflake import run_sql_from_file
+from pipeline.snowflake.load_snowflake import snowflake_connection
 import logging
-from datetime import datetime
 import pandas as pd
 from abc import ABC, abstractmethod
 from dotenv import load_dotenv
@@ -34,19 +33,39 @@ class StaticIngestor(ABC):
         """Clean and transform raw data"""
         pass
 
-    @abstractmethod
-    def load_static_to_snowflake(self):
-        """Load static data sources to Snowflake"""
-        pass
+    def load_static_to_snowflake(self, df: pd.DataFrame, table_name: str):
+        """Load processed data directly to Snowflake"""
+        try:
+            with snowflake_connection() as conn:
+                df.to_sql(
+                    name=table_name,
+                    con=conn,
+                    schema='STATIC',
+                    if_exists='replace',
+                    index=False,
+                    method='multi'
+                )
+            logger.info(f"Loaded {len(df)} rows to {table_name}")
+        except Exception as e:
+            logger.error(f"Failed to load {table_name} to Snowflake: {e}")
+            raise
 
-    def run(self, name: str):
+    def run(self, table_name: str):
         """Main loading, processing, and saving logic"""
         # Load data
         raw_df = self.load_data()
+
+        if raw_df.empty:
+            logger.warning(f"No data found for {table_name}")
+            return None
+
+        # Process data
         processed_df = self.process_data(raw_df)
-        
 
+        # Save data to Snowflake
+        self.load_static_to_snowflake(processed_df, table_name)
 
+        logger.info(f"Completed {table_name}")
 
 class MentalHealthInTechSurveyIngestor(StaticIngestor):
     def __init__(self):
@@ -88,10 +107,6 @@ class MentalHealthInTechSurveyIngestor(StaticIngestor):
         logger.info(f"Processed Mental Health in Tech Survey data: {len(df)} rows")
         
         return df
-    
-    def load_static_to_snowflake(self):
-        today = datetime.today().strftime("%Y-%m-%d")
-        run_sql_from_file()
 
 class WHOSuicideStatisticsIngestor(StaticIngestor):
     def __init__(self):
@@ -132,10 +147,6 @@ class WHOSuicideStatisticsIngestor(StaticIngestor):
 
         return df
     
-    def load_static_to_snowflake(self):
-        today = datetime.today().strftime("%Y-%m-%d")
-        run_sql_from_file()
-    
 class MentalHealthCareInLast4WeeksIngestor(StaticIngestor):
     def __init__(self):
         super().__init__()
@@ -168,10 +179,6 @@ class MentalHealthCareInLast4WeeksIngestor(StaticIngestor):
         logger.info(f"Processed Mental Health Care in Last 4 Weeks data: {len(df)} rows")
 
         return df
-    
-    def load_static_to_snowflake(self):
-        today = datetime.today().strftime("%Y-%m-%d")
-        run_sql_from_file()
 
 class SuicideByDemographicsIngestor(StaticIngestor):
     def __init__(self):
@@ -214,13 +221,3 @@ class SuicideByDemographicsIngestor(StaticIngestor):
         logger.info(f"Processed Death Rates for Suicide by Demographic data: {len(df)} rows")
 
         return df
-    
-    def load_static_to_snowflake(self):
-        today = datetime.today().strftime("%Y-%m-%d")
-        run_sql_from_file()
-
-        
-
-
-
-
