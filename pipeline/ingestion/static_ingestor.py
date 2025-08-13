@@ -1,11 +1,20 @@
-from pipeline.snowflake.load_snowflake import snowflake_connection
 import logging
 import pandas as pd
 from abc import ABC, abstractmethod
 from dotenv import load_dotenv
 import boto3
 import os
-load_dotenv()
+import sys
+from pathlib import Path
+
+if os.path.exists('.env.local'):
+    load_dotenv('.env.local')
+else:
+    load_dotenv()
+
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+from pipeline.snowflake.load_snowflake import snowflake_connection
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,18 +43,53 @@ class StaticIngestor(ABC):
         pass
 
     def load_static_to_snowflake(self, df: pd.DataFrame, table_name: str):
-        """Load processed data directly to Snowflake"""
+        """Load processed data to Snowflake using bulk insert"""
         try:
             with snowflake_connection() as conn:
-                df.to_sql(
-                    name=table_name,
-                    con=conn,
-                    schema='STATIC',
-                    if_exists='replace',
-                    index=False,
-                    method='multi'
+                cursor = conn.cursor()
+                
+                # Create table with proper column definitions
+                columns = []
+                for col in df.columns:
+                    if df[col].dtype == 'object':
+                        columns.append(f'"{col}" VARCHAR(16777216)')
+                    elif df[col].dtype in ['int64', 'int32']:
+                        columns.append(f'"{col}" INTEGER')
+                    elif df[col].dtype in ['float64', 'float32']:
+                        columns.append(f'"{col}" FLOAT')
+                    elif df[col].dtype == 'bool':
+                        columns.append(f'"{col}" BOOLEAN')
+                    elif 'datetime' in str(df[col].dtype):
+                        columns.append(f'"{col}" TIMESTAMP')
+                    else:
+                        columns.append(f'"{col}" VARCHAR(16777216)')
+                
+                # Create table
+                create_sql = f"""
+                CREATE OR REPLACE TABLE STATIC.{table_name} (
+                    {', '.join(columns)}
                 )
-            logger.info(f"Loaded {len(df)} rows to {table_name}")
+                """
+                cursor.execute(create_sql)
+                
+                data_tuples = []
+                for _, row in df.iterrows():
+                    tuple_row = []
+                    for value in row:
+                        if pd.isna(value):
+                            tuple_row.append(None)
+                        else:
+                            tuple_row.append(value)
+                    data_tuples.append(tuple(tuple_row))
+                
+                # Bulk insert
+                placeholders = ', '.join(['%s'] * len(df.columns))
+                insert_sql = f"INSERT INTO STATIC.{table_name} VALUES ({placeholders})"
+                
+                cursor.executemany(insert_sql, data_tuples)
+                conn.commit()
+                
+            logger.info(f"Loaded {len(df)} rows to STATIC.{table_name}")
         except Exception as e:
             logger.error(f"Failed to load {table_name} to Snowflake: {e}")
             raise
