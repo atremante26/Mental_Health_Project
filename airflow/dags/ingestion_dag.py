@@ -17,13 +17,13 @@ default_args = {
 }
 
 def run_cdc():
-    CDCIngestor().run("cdc", save_s3=True, save_local=False)
+    CDCIngestor().run("cdc", "cdc_suite", save_s3=True, save_local=False)
 
 def run_reddit():
-    RedditIngestor().run("reddit", save_s3=True, save_local=False)
+    RedditIngestor().run("reddit", "reddit_suite", save_s3=True, save_local=False)
 
 def run_trends():
-    GoogleTrendsIngestor().run("trends", save_s3=True, save_local=False)
+    GoogleTrendsIngestor().run("trends", "trends_suite", save_s3=True, save_local=False)
 
 with DAG(
     dag_id="ingestion_dag",

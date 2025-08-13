@@ -41,4 +41,4 @@ class CDCIngestor(BaseIngestor):
     
 if __name__ == "__main__":
     cdc_ingestor = CDCIngestor()
-    cdc_ingestor.run("cdc", True, True)
+    cdc_ingestor.run("cdc", "cdc_suite", True, True)

@@ -7,6 +7,8 @@ from datetime import datetime
 from io import BytesIO
 from typing import Optional
 import pandas as pd
+from great_expectations.data_context import get_context
+from great_expectations.core.batch import BatchRequest
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -68,7 +70,33 @@ class BaseIngestor(ABC):
         self.s3.upload_fileobj(buffer, self.S3_BUCKET, s3_key)
         logger.info(f"Uploaded {suffix} data to s3://{self.S3_BUCKET}/{s3_key}")
 
-    def run(self, name: str, save_s3: bool = True, save_local: bool = False):
+    def validate(self, df: pd.DataFrame, gx_suite: str):
+        # Initialize GE context
+        context = get_context()
+
+        # Create validator
+        validator = context.sources.pandas_default.read_dataframe(df)
+        try:
+            validator = context.get_validator(
+                validator=validator,
+                expectation_suite_name=gx_suite
+            )
+        except Exception as e:
+            logger.error(f"[GE Suite Error] Could not load suite '{gx_suite}': {e}")
+            raise
+
+        # Run validation
+        results = validator.validate()
+
+        if not results["success"]:
+            logger.error(f"[Validation Failed] Suite: {gx_suite} — details:\n{results}")
+            raise ValueError(f"[Validation Failed] Suite: {gx_suite}")
+
+        logger.info(f"[Validation Passed] Suite: {gx_suite}")
+        return results
+
+
+    def run(self, name: str, gx_suite: str, save_s3: bool = True, save_local: bool = False):
         """Main ingestion pipeline logic"""
         # Load data
         raw_df = self.load_data()
@@ -89,6 +117,9 @@ class BaseIngestor(ABC):
 
         # Process data
         processed_df = self.process_data(raw_df)
+
+        # Validate data with Great Expectations
+        self.validate(processed_df, gx_suite)
 
         # Save processed (local + S3)
         if save_local:

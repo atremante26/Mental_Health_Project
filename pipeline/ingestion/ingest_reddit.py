@@ -55,4 +55,4 @@ class RedditIngestor(BaseIngestor):
 
 if __name__ == "__main__":
     reddit_ingestor = RedditIngestor()
-    reddit_ingestor.run("reddit", True, True)
+    reddit_ingestor.run("reddit", "reddit_suite", True, True)

@@ -48,4 +48,4 @@ class GoogleTrendsIngestor(BaseIngestor):
     
 if __name__ == "__main__":
     trends_ingestor = GoogleTrendsIngestor()
-    trends_ingestor.run("trends", True, True)
+    trends_ingestor.run("trends", "trends_suite", True, True)
