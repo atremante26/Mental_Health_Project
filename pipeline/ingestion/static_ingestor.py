@@ -48,7 +48,7 @@ class StaticIngestor(ABC):
             with snowflake_connection() as conn:
                 cursor = conn.cursor()
                 
-                # Create table with proper column definitions
+                # Create table
                 columns = []
                 for col in df.columns:
                     if df[col].dtype == 'object':
@@ -60,11 +60,11 @@ class StaticIngestor(ABC):
                     elif df[col].dtype == 'bool':
                         columns.append(f'"{col}" BOOLEAN')
                     elif 'datetime' in str(df[col].dtype):
-                        columns.append(f'"{col}" TIMESTAMP')
+                        columns.append(f'"{col}" VARCHAR(16777216)')
                     else:
                         columns.append(f'"{col}" VARCHAR(16777216)')
                 
-                # Create table
+                # Create table SQL statement
                 create_sql = f"""
                 CREATE OR REPLACE TABLE STATIC.{table_name} (
                     {', '.join(columns)}
@@ -78,6 +78,8 @@ class StaticIngestor(ABC):
                     for value in row:
                         if pd.isna(value):
                             tuple_row.append(None)
+                        elif hasattr(value, 'strftime'): 
+                            tuple_row.append(value.strftime('%Y-%m-%d %H:%M:%S'))
                         else:
                             tuple_row.append(value)
                     data_tuples.append(tuple(tuple_row))
