@@ -32,3 +32,8 @@ airflow/keys/
 *.p8
 *.pem
 rsa_key*
+
+# ----------------------
+# Great Expectations
+# ----------------------
+gx/uncommitted/

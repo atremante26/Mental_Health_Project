@@ -22,3 +22,4 @@ pytrends==4.9.0
 snowflake-connector-python>=3.4.0,<4.0.0
 snowflake-sqlalchemy>=1.4.7,<2.0.0
 cryptography
+great_expectations==0.17.20
