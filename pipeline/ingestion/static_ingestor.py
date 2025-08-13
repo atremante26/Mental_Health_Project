@@ -42,8 +42,25 @@ class StaticIngestor(ABC):
         """Clean and transform raw data"""
         pass
 
+    def load_static_to_s3(self, df: pd.DataFrame, file_name: str):
+        """Load processed data to AWS S3"""
+        try:
+            processed_key = f"static_data/processed/{file_name.lower()}.json"
+            json_buffer = df.to_json(orient='records', date_format='iso')
+
+            self.s3.put_object(
+            Bucket=self.S3_BUCKET,
+            Key=processed_key,
+            Body=json_buffer
+            )
+
+            logger.info(f"Saved processed data to s3://{self.S3_BUCKET}/{processed_key}")
+        except Exception as e:
+            logger.error(f"Failed to save processed data to S3: {e}")
+
+
     def load_static_to_snowflake(self, df: pd.DataFrame, table_name: str):
-        """Load processed data to Snowflake using bulk insert"""
+        """Load processed data to Snowflake"""
         try:
             with snowflake_connection() as conn:
                 cursor = conn.cursor()
@@ -96,7 +113,7 @@ class StaticIngestor(ABC):
             logger.error(f"Failed to load {table_name} to Snowflake: {e}")
             raise
 
-    def run(self, table_name: str):
+    def run(self, file_name: str, table_name: str):
         """Main loading, processing, and saving logic"""
         # Load data
         raw_df = self.load_data()
@@ -107,6 +124,9 @@ class StaticIngestor(ABC):
 
         # Process data
         processed_df = self.process_data(raw_df)
+
+        # Save data to S3
+        self.load_static_to_s3(processed_df, file_name)
 
         # Save data to Snowflake
         self.load_static_to_snowflake(processed_df, table_name)
