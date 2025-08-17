@@ -9,3 +9,4 @@ from .static_ingestor import (
     MentalHealthCareInLast4WeeksIngestor,
     SuicideByDemographicsIngestor
 )
+from .validator import Validator
