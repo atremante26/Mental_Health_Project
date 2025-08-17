@@ -1,7 +1,6 @@
 import logging
 import pandas as pd
 import great_expectations as gx
-from great_expectations.core.expectation_configuration import ExpectationConfiguration
 from base_validator import BaseValidator 
 
 # Configure logging
@@ -21,6 +20,7 @@ class TrendsValidator(BaseValidator):
                 Key=f'trends_processed/trends_processed_{self.today}.json'  
             )
             df = pd.read_json(response['Body'])
+            df["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
 
             # Get context
             context = gx.get_context()
@@ -39,12 +39,15 @@ class TrendsValidator(BaseValidator):
             
             # Define expectations
             validator.expect_table_columns_to_match_ordered_list(["date", "keyword", "interest"])
+
             validator.expect_column_to_exist("date")
             validator.expect_column_to_exist("keyword")
             validator.expect_column_to_exist("interest")
+
             validator.expect_column_values_to_not_be_null("date")
             validator.expect_column_values_to_not_be_null("keyword")
             validator.expect_column_values_to_not_be_null("interest")
+
             validator.expect_column_values_to_be_between("interest", min_value=0, max_value=100)
             validator.expect_column_values_to_match_strftime_format("date", "%Y-%m-%d")
             
@@ -62,7 +65,3 @@ class TrendsValidator(BaseValidator):
         except Exception as e:
             logger.error(f"Failed to load Google Trends processed data from {self.today}: {e}")
             return False
-        
-
-
-        
