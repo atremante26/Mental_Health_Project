@@ -3,6 +3,7 @@ import pandas as pd
 from great_expectations.data_context import get_context
 from great_expectations.core.batch import BatchRequest
 from abc import ABC, abstractmethod
+from .validator import Validator
 from dotenv import load_dotenv
 import boto3
 import os
@@ -115,31 +116,6 @@ class StaticIngestor(ABC):
             logger.error(f"Failed to load {table_name} to Snowflake: {e}")
             raise
     
-    def validate(self, df: pd.DataFrame, gx_suite: str):
-        # Initialize GE context
-        context = get_context()
-
-        # Create validator
-        validator = context.sources.pandas_default.read_dataframe(df)
-        try:
-            validator = context.get_validator(
-                validator=validator,
-                expectation_suite_name=gx_suite
-            )
-        except Exception as e:
-            logger.error(f"[GE Suite Error] Could not load suite '{gx_suite}': {e}")
-            raise
-
-        # Run validation
-        results = validator.validate()
-
-        if not results["success"]:
-            logger.error(f"[Validation Failed] Suite: {gx_suite} — details:\n{results}")
-            raise ValueError(f"[Validation Failed] Suite: {gx_suite}")
-
-        logger.info(f"[Validation Passed] Suite: {gx_suite}")
-        return results
-    
     def run(self, file_name: str, gx_suite: str, table_name: str):
         """Main loading, processing, and saving logic"""
         # Load data
@@ -152,8 +128,10 @@ class StaticIngestor(ABC):
         # Process data
         processed_df = self.process_data(raw_df)
 
-        # Validate data with Great Expectations
-        self.validate(processed_df, gx_suite)
+        # Validate data
+        validator = Validator()
+        if not validator.validate(processed_df, gx_suite):
+            raise ValueError(f"Validation failed for suite: {gx_suite}")
 
         # Save data to S3
         self.load_static_to_s3(processed_df, file_name)
