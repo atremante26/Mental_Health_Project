@@ -5,7 +5,6 @@ import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
 from io import BytesIO
-from typing import Optional
 import pandas as pd
 from .validator import Validator
 from dotenv import load_dotenv
