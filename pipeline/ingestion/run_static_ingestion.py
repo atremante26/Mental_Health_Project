@@ -4,7 +4,6 @@ from static_ingestor import (
     MentalHealthCareInLast4WeeksIngestor,
     SuicideByDemographicsIngestor
 )
-from validator import Validator
 
 def run_all_static_sources():
     MentalHealthInTechSurveyIngestor().run("tech_survey_processed", "tech_survey_suite", "TECH_SURVEY")
