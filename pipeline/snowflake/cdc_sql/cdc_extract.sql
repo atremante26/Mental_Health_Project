@@ -1,0 +1,5 @@
+-- Use CDC Schema
+USE SCHEMA MENTAL_HEALTH.CDC;
+
+-- Select all CDC data
+SELECT * FROM CDC_PROCESSED;

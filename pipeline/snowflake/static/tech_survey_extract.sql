@@ -1,0 +1,5 @@
+-- Use CDC Schema
+USE SCHEMA MENTAL_HEALTH.STATIC;
+
+-- Select all CDC data
+SELECT * FROM TECH_SURVEY;
