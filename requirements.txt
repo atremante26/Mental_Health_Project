@@ -26,3 +26,5 @@ great_expectations==0.17.20
 scikit-learn
 gower
 hdbscan
+seaborn
+matplotlib
