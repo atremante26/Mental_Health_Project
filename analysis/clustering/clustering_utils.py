@@ -8,7 +8,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def run_hdbscan_clustering(distance_matrix, min_cluster_size=50, min_samples=10):
+def run_hdbscan_clustering(distance_matrix, min_cluster_size=15, min_samples=10):
     """Run HDBSCAN clustering on distance matrix"""
     clusterer = HDBSCAN(
         min_cluster_size=min_cluster_size,
