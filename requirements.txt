@@ -28,3 +28,4 @@ gower
 hdbscan
 seaborn
 matplotlib
+google-generativeai
