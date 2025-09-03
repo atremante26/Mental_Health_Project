@@ -29,3 +29,4 @@ hdbscan
 seaborn
 matplotlib
 google-generativeai
+prophet
