@@ -57,14 +57,11 @@ def prepare_time_series(df, date_col, value_col):
 
 def prepare_who_time_series(df, year_col='year', value_col='suicides_no'):
     """Convert WHO annual data to time series format"""
-    # Aggregate by year if multiple records per year
-    if df.groupby(year_col).size().max() > 1:
-        annual_data = df.groupby(year_col)[value_col].sum().reset_index()
-    else:
-        annual_data = df[[year_col, value_col]].copy()
+    # Aggregate by year (sum across countries/demographics)
+    annual_totals = df.groupby(year_col)[value_col].sum().reset_index()
     
-    # Convert year integer to datetime
-    annual_data['date'] = pd.to_datetime(annual_data[year_col], format='%Y')
+    # Convert year integer to datetime (January 1st of each year)
+    annual_totals['date'] = pd.to_datetime(annual_totals[year_col], format='%Y')
     
-    # Return in standard format
-    return annual_data[['date', value_col]].set_index('date')
+    # Return in standard time series format
+    return annual_totals[['date', value_col]].set_index('date')
