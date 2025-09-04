@@ -41,9 +41,30 @@ def compute_gower_distance(df, categorical_indices):
 
 def prepare_time_series(df, date_col, value_col):
     """Prepare time series data for forecasting"""
+    # Select only the columns needed for time series analysis
     ts_df = df[[date_col, value_col]].copy()
+    
+    # Convert date column to datetime format
     ts_df[date_col] = pd.to_datetime(ts_df[date_col])
+    
+    # Sort by date to ensure chronological order
     ts_df = ts_df.sort_values(date_col)
+    
+    # Set date as index for time series operations
     ts_df = ts_df.set_index(date_col)
     
     return ts_df
+
+def prepare_who_time_series(df, year_col='year', value_col='suicides_no'):
+    """Convert WHO annual data to time series format"""
+    # Aggregate by year if multiple records per year
+    if df.groupby(year_col).size().max() > 1:
+        annual_data = df.groupby(year_col)[value_col].sum().reset_index()
+    else:
+        annual_data = df[[year_col, value_col]].copy()
+    
+    # Convert year integer to datetime
+    annual_data['date'] = pd.to_datetime(annual_data[year_col], format='%Y')
+    
+    # Return in standard format
+    return annual_data[['date', value_col]].set_index('date')
