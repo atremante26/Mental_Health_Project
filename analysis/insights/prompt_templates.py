@@ -1,44 +1,25 @@
-REDDIT_SENTIMENT_PROMPT = """
-Analyze the following mental health Reddit posts and provide insights:
+COMPREHENSIVE_ANALYSIS_PROMPT = """
+Analyze the following comprehensive mental health data from multiple sources:
 
-Posts:
-{posts_text}
+STATISTICAL DATA FROM OFFICIAL SOURCES:
+{stats_text}
 
-Please provide:
-1. Overall sentiment trends
-2. Common themes and concerns
-3. Language patterns that indicate distress levels
-4. Emerging topics or changes over time
+ONLINE COMMUNITY DISCUSSIONS (REDDIT):
+{reddit_text}
 
-Focus on actionable insights for mental health awareness. Avoid diagnostic language.
-"""
+Please provide a thorough analysis covering:
 
-STATISTICAL_SUMMARY_PROMPT = """
-Based on the following mental health statistics, generate a clear summary:
+1. **Cross-Source Patterns**: How do the statistical trends align or contrast with online community discussions?
 
-Data:
-{statistics}
+2. **Population vs. Individual Perspectives**: What gaps exist between population-level statistics and individual experiences shared online?
 
-Please provide:
-1. Key trends and patterns
-2. Notable changes or anomalies
-3. Contextual interpretation
-4. Implications for mental health awareness
+3. **Temporal and Demographic Insights**: Are there notable patterns across time periods or demographic groups in the data?
 
-Use accessible language suitable for general audiences.
-"""
+4. **Public Health Implications**: What do these combined data sources suggest about mental health awareness, access to care, and intervention needs?
 
-CLUSTER_INTERPRETATION_PROMPT = """
-Interpret these mental health survey clusters:
+5. **Data Quality Assessment**: Are there limitations or biases in either data source that should be considered?
 
-Cluster Data:
-{cluster_profiles}
+6. **Actionable Recommendations**: Based on this comprehensive view, what specific actions could improve mental health outcomes or awareness?
 
-Please provide:
-1. Meaningful names for each cluster
-2. Key characteristics of each group
-3. Potential intervention strategies
-4. Limitations of this segmentation approach
-
-Be careful not to stereotype or oversimplify mental health experiences.
+Focus on evidence-based observations from the actual data provided. Use accessible language suitable for public health professionals and general audiences. Avoid speculation beyond what the data directly supports.
 """

@@ -65,3 +65,43 @@ def prepare_who_time_series(df, year_col='year', value_col='suicides_no'):
     
     # Return in standard time series format
     return annual_totals[['date', value_col]].set_index('date')
+
+def prepare_reddit_for_llm(df, max_posts=15, max_length=200):
+    """Prepare Reddit posts sample for LLM analysis"""
+    sample_df = df.sample(n=min(len(df), max_posts))
+    
+    posts_text = []
+    for _, row in sample_df.iterrows():
+        title = row['title'][:100]
+        text = str(row['text'])[:max_length] if pd.notna(row['text']) else ""
+        subreddit = row['subreddit']
+        
+        post_summary = f"Subreddit: {subreddit}\nTitle: {title}\nText: {text}\n---"
+        posts_text.append(post_summary)
+    
+    return "\n".join(posts_text)
+
+def create_statistical_summary_for_llm(cdc_df=None, who_df=None, care_df=None):
+    """Generate statistical insights for LLM consumption"""
+    summary = {}
+    
+    if cdc_df is not None and len(cdc_df) > 0:
+        summary['CDC Mental Health Trends'] = {
+            'Average anxiety prevalence': f"{cdc_df['anxiety'].mean():.1f}%",
+            'Average depression prevalence': f"{cdc_df['depression'].mean():.1f}%",
+            'Date range': f"{cdc_df['date'].min()} to {cdc_df['date'].max()}"
+        }
+    
+    if who_df is not None and len(who_df) > 0:
+        summary['WHO Global Suicide Data'] = {
+            'Global suicide rate': f"{who_df['suicides/100k pop'].mean():.1f} per 100k",
+            'Time period': f"{who_df['year'].min()}-{who_df['year'].max()}",
+            'Countries': who_df['country'].nunique()
+        }
+    
+    if care_df is not None and len(care_df) > 0:
+        summary['Mental Health Care Access'] = {
+            'Records analyzed': len(care_df)
+        }
+    
+    return summary
