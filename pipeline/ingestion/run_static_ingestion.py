@@ -1,4 +1,4 @@
-from static_ingestor import (
+from pipeline.ingestion.static_ingestor import (
     MentalHealthInTechSurveyIngestor,
     WHOSuicideStatisticsIngestor, 
     MentalHealthCareInLast4WeeksIngestor,
