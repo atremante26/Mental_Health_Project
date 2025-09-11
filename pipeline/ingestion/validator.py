@@ -23,6 +23,16 @@ class Validator():
             
             # Run validation
             results = validator.validate()
+
+            # Log which expectations failed
+            if not results.success:
+                logger.error(f"{suite_name} validation FAILED")
+                for result in results.results:
+                    if not result.success:
+                        logger.error(f"  FAILED: {result.expectation_config.expectation_type}")
+                        logger.error(f"    {result.result}")
+            else:
+                logger.info(f"{suite_name} validation PASSED")
             
             logger.info(f"{suite_name} validation {'PASSED' if results.success else 'FAILED'}")
             return results.success
