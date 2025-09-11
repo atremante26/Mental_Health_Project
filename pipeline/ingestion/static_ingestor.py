@@ -3,7 +3,7 @@ import pandas as pd
 from great_expectations.data_context import get_context
 from great_expectations.core.batch import BatchRequest
 from abc import ABC, abstractmethod
-from validator import Validator
+from .validator import Validator
 from dotenv import load_dotenv
 import boto3
 import os
