@@ -2,6 +2,8 @@ from pipeline.ingestion import BaseIngestor
 import logging
 from pytrends.request import TrendReq
 import pandas as pd
+import time
+import random
 
 logger = logging.getLogger(__name__)
 
@@ -15,26 +17,48 @@ class GoogleTrendsIngestor(BaseIngestor):
         ]
     
     def load_data(self):
-        # Collect and combine all raw data
-        raw_data_frames = []
-
+        all_data = []
+        
         for group in self.keyword_groups:
-            try:
-                self.pytrends.build_payload(group, timeframe='today 3-m', geo='US')
-                group_data = self.pytrends.interest_over_time()
-                if not group_data.empty:
-                    raw_data_frames.append(group_data)
-            except:
-                logger.info(f"Failed to load Google Trends data for group {group} on {self.today}")
-
-        # Merge all results
-        if not raw_data_frames:
-            logger.info("No data returned from Google Trends")
+            for attempt in range(3):  # Retry up to 3 times
+                try:
+                    logger.info(f"Attempting to load Google Trends data for group {group} (attempt {attempt + 1})")
+                    
+                    # Add random delay to avoid rate limiting
+                    time.sleep(random.uniform(2, 5))
+                    
+                    # Build payload with date range
+                    self.pytrends.build_payload(
+                        group, 
+                        cat=0, 
+                        timeframe='today 12-m',  # Last 12 months
+                        geo='CA', # Try region with less traffic (Canada)
+                        gprop=''
+                    )
+                    
+                    # Get interest over time
+                    data = self.pytrends.interest_over_time()
+                    
+                    if not data.empty:
+                        all_data.append(data)
+                        logger.info(f"Successfully loaded data for group {group}")
+                        break
+                    else:
+                        logger.warning(f"Empty data returned for group {group}")
+                        
+                except Exception as e:
+                    logger.warning(f"Attempt {attempt + 1} failed for group {group}: {e}")
+                    if attempt < 2:  # Not the last attempt
+                        time.sleep(random.uniform(5, 10))  # Longer delay before retry
+                    continue
+        
+        if not all_data:
+            logger.error("No data returned from Google Trends")
             return pd.DataFrame()
-
-        raw_combined = pd.concat(raw_data_frames, axis=1)
-        raw_combined = raw_combined.loc[:, ~raw_combined.columns.duplicated()]
-        return raw_combined
+        
+        # Combine all data
+        combined_data = pd.concat(all_data, axis=1)
+        return combined_data
 
     def process_data(self, df):
         # Drop 'isPartial' if present
