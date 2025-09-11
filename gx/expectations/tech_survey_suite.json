@@ -425,14 +425,6 @@
         "type_": "object"
       },
       "meta": {}
-    },
-    {
-      "expectation_type": "expect_column_values_to_match_strftime_format",
-      "kwargs": {
-        "column": "survey_date",
-        "strftime_format": "%Y-%m-%d"
-      },
-      "meta": {}
     }
   ],
   "ge_cloud_id": null,

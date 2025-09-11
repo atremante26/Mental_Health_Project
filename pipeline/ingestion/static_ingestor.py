@@ -176,7 +176,7 @@ class MentalHealthInTechSurveyIngestor(StaticIngestor):
         df = df.drop(columns=['comments'])
 
         # Convert column to datetime type
-        df['survey_date'] = pd.to_datetime(df['Timestamp']).dt.date
+        df['survey_date'] = pd.to_datetime(df['Timestamp'])
 
         logger.info(f"Processed Mental Health in Tech Survey data: {len(df)} rows")
         
