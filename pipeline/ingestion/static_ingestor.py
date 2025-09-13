@@ -298,10 +298,20 @@ class SuicideByDemographicsIngestor(StaticIngestor):
 
         # Improve column names
         df['demographic_category'] = df['stub_name']
-        df['demographic_value'] = df['stub_label'] 
+        df['demographic_value'] = df['stub_label']   
+
+        # Remove rows with nulls in essential structural columns
+        essential_cols = ['indicator', 'unit', 'stub_name', 'stub_label', 'year', 
+                        'age', 'estimate', 'demographic_category', 'demographic_value']
+        
+        initial_rows = len(df)
+        df = df.dropna(subset=essential_cols)
+        final_rows = len(df)
+        
+        logger.info(f"Removed {initial_rows - final_rows} rows with missing essential data")
 
         # Data validation
-        df = df[df['year'] >= 1950]  
+        df = df[df['year'] >= 1950]
 
         logger.info(f"Processed Death Rates for Suicide by Demographic data: {len(df)} rows")
 
