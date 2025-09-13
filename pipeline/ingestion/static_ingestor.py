@@ -241,6 +241,17 @@ class MentalHealthCareInLast4WeeksIngestor(StaticIngestor):
         # Drop Suppression Flag (mostly NaN as you noted)
         df = df.drop(columns=['Suppression Flag'], errors='ignore')
 
+        # Remove rows with nulls from essential columns
+        essential_cols = ['Indicator', 'Group', 'State', 'Subgroup', 'Time Period', 
+                     'Time Period Label', 'Time Period Start Date', 
+                     'Time Period End Date', 'Value']
+    
+        initial_rows = len(df)
+        df = df.dropna(subset=essential_cols)
+        final_rows = len(df)
+    
+        logger.info(f"Removed {initial_rows - final_rows} rows with missing essential data")
+
         # Convert date columns to proper datetime
         df['Time Period Start Date'] = pd.to_datetime(df['Time Period Start Date'])
         df['Time Period End Date'] = pd.to_datetime(df['Time Period End Date'])

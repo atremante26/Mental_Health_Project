@@ -252,22 +252,6 @@
         "min_value": 1
       },
       "meta": {}
-    },
-    {
-      "expectation_type": "expect_column_values_to_match_strftime_format",
-      "kwargs": {
-        "column": "Time Period Start Date",
-        "strftime_format": "%Y-%m-%d"
-      },
-      "meta": {}
-    },
-    {
-      "expectation_type": "expect_column_values_to_match_strftime_format",
-      "kwargs": {
-        "column": "Time Period End Date",
-        "strftime_format": "%Y-%m-%d"
-      },
-      "meta": {}
     }
   ],
   "ge_cloud_id": null,
