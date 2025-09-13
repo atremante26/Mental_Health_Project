@@ -152,7 +152,8 @@
       "kwargs": {
         "column": "year",
         "max_value": 2025,
-        "min_value": 1980
+        "min_value": 1980,
+        "mostly": 0.98
       },
       "meta": {}
     },
