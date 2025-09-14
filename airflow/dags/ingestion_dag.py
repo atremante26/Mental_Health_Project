@@ -44,10 +44,10 @@ with DAG(
         python_callable=run_reddit
     )
 
-    ingest_trends_task = PythonOperator(
-        task_id='ingest_trends',
-        python_callable=run_trends
-    )
+    # ingest_trends_task = PythonOperator(
+        # task_id='ingest_trends',
+        # python_callable=run_trends,
+    # )
 
     load_cdc_task = PythonOperator(
         task_id='load_cdc_to_snowflake',
@@ -59,11 +59,11 @@ with DAG(
         python_callable=load_reddit_to_snowflake
     )
 
-    load_trends_task = PythonOperator(
-        task_id='load_trends_to_snowflake',
-        python_callable=load_trends_to_snowflake
-    )
+    # load_trends_task = PythonOperator(
+        # task_id='load_trends_to_snowflake',
+        # python_callable=load_trends_to_snowflake
+    # )
 
     ingest_cdc_task >> load_cdc_task
     ingest_reddit_task >> load_reddit_task
-    ingest_trends_task >> load_trends_task
+    # ingest_trends_task >> load_trends_task
