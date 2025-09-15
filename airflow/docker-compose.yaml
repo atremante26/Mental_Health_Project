@@ -33,6 +33,8 @@ services:
       - ../pipeline:/opt/airflow/pipeline
       - ../requirements.txt:/requirements.txt 
       - ./keys:/opt/airflow/keys 
+      - ../gx:/opt/airflow/gx         
+      - ../data:/opt/airflow/data  
     ports:
       - "8080:8080"
     command: bash -c "pip install -r /requirements.txt && airflow webserver"
