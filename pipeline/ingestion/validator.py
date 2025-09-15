@@ -14,7 +14,7 @@ class Validator():
         """Perform data validation with Great Expectations"""
         try:
             # Get context and load existing suite
-            context = gx.get_context(project_root_dir="/opt/airflow/gx")
+            context = gx.get_context(project_root_dir='/opt/airflow') # Use /opt/airflow as project root
             suite = context.get_expectation_suite(expectation_suite_name=suite_name)
             
             # Create validator with existing suite
