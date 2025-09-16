@@ -1,0 +1,98 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    paths: 
+      - 'pipeline/**'
+      - 'airflow/**' 
+      - 'gx/**'
+      - 'requirements.txt'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: mental-health-data-pipeline
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Test Great Expectations suites
+        run: |
+          python -c "
+          import great_expectations as gx
+          context = gx.get_context(project_root_dir='gx')
+          suites = context.list_expectation_suite_names()
+          assert len(suites) >= 6, f'Expected at least 6 suites, found {len(suites)}'
+          print(f'✓ Found {len(suites)} expectation suites')
+          "
+
+      - name: Test Docker build
+        run: |
+          cd airflow
+          docker-compose build --no-cache airflow-webserver
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Create ECR repository if it doesn't exist
+        run: |
+          aws ecr describe-repositories --repository-names $ECR_REPOSITORY || \
+          aws ecr create-repository --repository-name $ECR_REPOSITORY
+
+      - name: Build and push data pipeline image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Create production Dockerfile
+          cat > Dockerfile << 'EOF'
+          FROM apache/airflow:2.9.1-python3.9
+          
+          COPY requirements.txt /requirements.txt
+          RUN pip install -r /requirements.txt
+          
+          COPY pipeline /opt/airflow/pipeline
+          COPY gx /opt/airflow/gx
+          COPY airflow/dags /opt/airflow/dags
+          
+          WORKDIR /opt/airflow
+          EOF
+          
+          # Build and push
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+          echo "Image pushed: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
