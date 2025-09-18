@@ -34,7 +34,7 @@ jobs: # Different tasks to run
         run: |
           python -c "
           import great_expectations as gx
-          context = gx.get_context(project_root_dir='gx')
+          context = gx.get_context(project_root_dir='.')
           suites = context.list_expectation_suite_names()
           assert len(suites) >= 6, f'Expected at least 6 suites, found {len(suites)}'
           print(f'✓ Found {len(suites)} expectation suites')
