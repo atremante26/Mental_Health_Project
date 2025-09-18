@@ -56,10 +56,10 @@ with DAG(
 
     load_reddit_task = PythonOperator(
         task_id='load_reddit_to_snowflake',
-        python_callable=load_reddit_to_snowflake
+        python_callable=load_reddit_to_snowflake 
     )
 
-    # load_trends_task = PythonOperator(
+    # load_trends_task = PythonOperator( 
         # task_id='load_trends_to_snowflake',
         # python_callable=load_trends_to_snowflake
     # )
