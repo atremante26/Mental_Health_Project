@@ -1,8 +1,8 @@
 name: CI/CD Pipeline
 
-on:
+on: # When to run this workflow                                            
   push:
-    branches: [ main ]
+    branches: [ main ] # When code is pushed to main branch
     paths: 
       - 'pipeline/**'
       - 'airflow/**' 
@@ -10,27 +10,27 @@ on:
       - 'requirements.txt'
   workflow_dispatch:
 
-env:
+env: # Sets environment
   AWS_REGION: us-east-1
   ECR_REPOSITORY: mental-health-data-pipeline
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+jobs: # Different tasks to run
+  test: # First task: run tests
+    runs-on: ubuntu-latest # Use Ubuntu server
     steps:
-      - name: Checkout code
+      - name: Checkout code # Download code
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python # Install Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Install dependencies
+      - name: Install dependencies # Install Python packages
         run: |
           pip install -r requirements.txt
 
-      - name: Test Great Expectations suites
+      - name: Test Great Expectations suites # Test GX (confirm validation works)
         run: |
           python -c "
           import great_expectations as gx
@@ -40,36 +40,36 @@ jobs:
           print(f'✓ Found {len(suites)} expectation suites')
           "
 
-      - name: Test Docker build
+      - name: Test Docker build # Test Docker
         run: |
           cd airflow
           docker-compose build --no-cache airflow-webserver
 
-  build-and-push:
-    needs: test
+  build-and-push: # Second job: build Docker image
+    needs: test # Run only if tests pass
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
+      - name: Checkout code # Download code
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials # Access AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
+ 
+      - name: Login to Amazon ECR # Login to AWS
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Create ECR repository if it doesn't exist
+      - name: Create ECR repository if it doesn't exist # Create AWS storage
         run: |
           aws ecr describe-repositories --repository-names $ECR_REPOSITORY || \
           aws ecr create-repository --repository-name $ECR_REPOSITORY
 
-      - name: Build and push data pipeline image
+      - name: Build and push data pipeline image # Update to AWS storage
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
