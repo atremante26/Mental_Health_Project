@@ -8,6 +8,7 @@ on: # When to run this workflow
       - 'airflow/**' 
       - 'gx/**'
       - 'requirements.txt'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 env: # Sets environment
@@ -39,17 +40,6 @@ jobs: # Different tasks to run
           assert len(suites) >= 6, f'Expected at least 6 suites, found {len(suites)}'
           print(f'✓ Found {len(suites)} expectation suites')
           "
-
-      - name: Install docker-compose # Install docker-compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose version
-
-      - name: Test Docker build # Test Docker
-        run: |
-          cd airflow
-          docker-compose build --no-cache airflow-webserver
 
   build-and-push: # Second job: build Docker image
     needs: test # Run only if tests pass
