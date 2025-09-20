@@ -36,4 +36,4 @@ rsa_key*
 # ----------------------
 # Great Expectations
 # ----------------------
-gx/uncommitted/
+gx/uncommitted

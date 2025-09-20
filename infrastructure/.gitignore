@@ -1,1 +1,13 @@
+# CDK generated files
+cdk.out/
+.cdk.staging/
+cdk.context.json
+
+# Python cache
+__pycache__/
 .venv/
+
+# CDK artifacts
+*.asset.*
+manifest.json
+tree.json

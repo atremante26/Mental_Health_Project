@@ -6,6 +6,7 @@ from aws_cdk import (
     aws_events as events,
     aws_events_targets as targets,
     aws_iam as iam,
+    aws_ecr as ecr,
     RemovalPolicy
 )
 
@@ -27,6 +28,20 @@ class MentalHealthStack(Stack):
             self, "MentalHealthCluster",
             vpc=vpc, # Use VPC from above
             cluster_name="mental-health-cluster"
+        )
+
+        # Create ECR repository for container images
+        ecr_repository = ecr.Repository(
+            self, "MentalHealthECR",
+            repository_name="mental-health-pipeline",
+            removal_policy=RemovalPolicy.DESTROY,  # Delete repo when stack is deleted
+            image_scan_on_push=True,  # Scan images for vulnerabilities
+            lifecycle_rules=[
+                ecr.LifecycleRule(
+                    max_image_count=5,  # Keep only 5 most recent images
+                    description="Keep only 5 recent images"
+                )
+            ]
         )
 
         # Create CloudWatch log group - where container output goes
@@ -70,7 +85,7 @@ class MentalHealthStack(Stack):
         # Create Fargate task definition
         task_definition = ecs.FargateTaskDefinition(
             self, "MentalhealthTaskDef",
-            memory_limit_mib=2048, # 26B RAM
+            memory_limit_mib=2048, # 2GB RAM
             cpu=512, # 0.5 vCPU
             execution_role=execution_role, # Role for ECS operations
             task_role=task_role # Role for application
@@ -79,7 +94,7 @@ class MentalHealthStack(Stack):
         # Add container to task definition
         container = task_definition.add_container(
             "MentalHealthContainer",
-            image=ecs.ContainerImage.from_registry("PLACEHOLDER_ECR_URI"), # TODO: replace with actual URI once ECR repo exists
+            image=ecs.ContainerImage.from_ecr_repository(ecr_repository, tag="latest"),
             memory_limit_mib=2048, # Container memory limit
             logging=ecs.LogDrivers.aws_logs( # Send container output to CloudWatch
                 stream_prefix="mental-health",
@@ -105,9 +120,8 @@ class MentalHealthStack(Stack):
             schedule=events.Schedule.cron( # Cron schedule
                 minute="0",
                 hour="8",  # 8 AM UTC
-                day="*",
                 month="*",
-                week_day="1"  # Monday
+                week_day="1"  # Monday (remove day="*" when using week_day)
             ),
             description="Trigger pipeline weekly"
         )
