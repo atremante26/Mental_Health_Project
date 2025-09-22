@@ -1,4 +1,4 @@
-# Use Python image with Airflow compatibility
+# Use official Python image
 FROM python:3.11-slim
 
 # Set working directory
@@ -12,7 +12,12 @@ RUN apt-get update && apt-get install -y \
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
+COPY airflow/keys/ ./keys/
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install latest Airflow with constraints
+RUN pip install --no-cache-dir apache-airflow==2.10.2 \
+    --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.10.2/constraints-3.11.txt"
 
 # Copy pipeline code
 COPY pipeline/ ./pipeline/
@@ -30,8 +35,5 @@ ENV AIRFLOW__CORE__LOAD_EXAMPLES=false
 ENV AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////tmp/airflow.db
 ENV AIRFLOW__CORE__EXECUTOR=SequentialExecutor
 
-# Initialize Airflow database
-RUN airflow db init
-
-# Set the default command to run a specific DAG
-CMD ["sh", "-c", "airflow dags test ingestion_dag $(date +%Y-%m-%d)"]
+# Set the default command to run your ingestion DAG
+CMD ["sh", "-c", "airflow db init && airflow dags test ingestion_dag $(date +%Y-%m-%d)"]

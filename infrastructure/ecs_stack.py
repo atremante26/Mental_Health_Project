@@ -105,7 +105,13 @@ class MentalHealthStack(Stack):
                 "AIRFLOW__CORE__LOAD_EXAMPLES": "false",
                 "AIRFLOW__CORE__DAGS_FOLDER": "/opt/airflow/dags",
                 "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN": "sqlite:////tmp/airflow.db",
-                "AIRFLOW__CORE__EXECUTOR": "SequentialExecutor"
+                "AIRFLOW__CORE__EXECUTOR": "SequentialExecutor",
+                "SNOWFLAKE_USER": "ATREMANTE",
+                "SNOWFLAKE_ACCOUNT": "SDQUHZQ-DTC15210",
+                "SNOWFLAKE_PRIVATE_KEY_PATH": "/opt/airflow/keys/rsa_key.p8",
+                "SNOWFLAKE_WAREHOUSE": "COMPUTE_WH",
+                "SNOWFLAKE_DATABASE": "MENTAL_HEALTH",
+                "SNOWFLAKE_ROLE": "ACCOUNTADMIN"
             },
             # Command to run Airflow DAG once
             command=[
