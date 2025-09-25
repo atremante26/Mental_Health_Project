@@ -1,3 +1,4 @@
+import os
 from aws_cdk import (
     Stack,
     aws_ecs as ecs,
@@ -100,18 +101,25 @@ class MentalHealthStack(Stack):
                 stream_prefix="mental-health",
                 log_group=log_group
             ),
-            environment={ # Environment variables for each container
+            environment={
                 "PYTHONPATH": "/opt/airflow",
                 "AIRFLOW__CORE__LOAD_EXAMPLES": "false",
                 "AIRFLOW__CORE__DAGS_FOLDER": "/opt/airflow/dags",
                 "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN": "sqlite:////tmp/airflow.db",
                 "AIRFLOW__CORE__EXECUTOR": "SequentialExecutor",
-                "SNOWFLAKE_USER": "ATREMANTE",
-                "SNOWFLAKE_ACCOUNT": "SDQUHZQ-DTC15210",
+                # Snowflake
+                "SNOWFLAKE_USER": os.getenv("SNOWFLAKE_USER"),
+                "SNOWFLAKE_ACCOUNT": os.getenv("SNOWFLAKE_ACCOUNT"),
                 "SNOWFLAKE_PRIVATE_KEY_PATH": "/opt/airflow/keys/rsa_key.p8",
-                "SNOWFLAKE_WAREHOUSE": "COMPUTE_WH",
-                "SNOWFLAKE_DATABASE": "MENTAL_HEALTH",
-                "SNOWFLAKE_ROLE": "ACCOUNTADMIN"
+                "SNOWFLAKE_WAREHOUSE": os.getenv("SNOWFLAKE_WAREHOUSE"),
+                "SNOWFLAKE_DATABASE": os.getenv("SNOWFLAKE_DATABASE"),
+                "SNOWFLAKE_ROLE": os.getenv("SNOWFLAKE_ROLE"),
+                # Reddit
+                "REDDIT_CLIENT_ID": os.getenv("REDDIT_CLIENT_ID"),
+                "REDDIT_CLIENT_SECRET": os.getenv("REDDIT_CLIENT_SECRET"),
+                "REDDIT_USERNAME": os.getenv("REDDIT_USERNAME"),
+                "REDDIT_PASSWORD": os.getenv("REDDIT_PASSWORD"),
+                "REDDIT_USER_AGENT": os.getenv("REDDIT_USER_AGENT"),
             },
             # Command to run Airflow DAG once
             command=[
