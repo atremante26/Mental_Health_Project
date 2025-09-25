@@ -135,7 +135,7 @@ class MentalHealthStack(Stack):
                 minute="0",
                 hour="8",  # 8 AM UTC
                 month="*",
-                week_day="1"  # Monday (remove day="*" when using week_day)
+                week_day="1"  # Sunday
             ),
             description="Trigger pipeline weekly"
         )
