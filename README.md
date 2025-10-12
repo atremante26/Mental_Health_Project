@@ -48,34 +48,78 @@ The platform follows a serverless, event-driven architecture for cost efficiency
 ### Data Flow
 ```mermaid
 graph TB
-    A[EventBridge Weekly Cron] --> B[AWS ECS Fargate Task]
-    B --> C[Airflow DAG Orchestration]
+    subgraph trigger["Scheduling"]
+        A[EventBridge Weekly Cron<br/>Sunday 8 AM UTC]
+    end
     
-    C --> D1[Reddit API Ingestion]
-    C --> D2[CDC Survey Ingestion]
-    C --> D3[Google Trends Ingestion]
+    subgraph compute["Serverless Compute"]
+        B[AWS ECS Fargate Task<br/>0.5 vCPU, 2GB RAM]
+        C[Airflow DAG Orchestration]
+    end
     
-    D1 --> E[Great Expectations Validation]
+    subgraph ingestion["Data Ingestion - Parallel"]
+        D1[Reddit API<br/>~100 posts/week]
+        D2[CDC Survey<br/>~50 records/week]
+        D3[Google Trends<br/>~30 data points/week]
+    end
+    
+    subgraph validation["Data Quality Gate"]
+        E[Great Expectations Validation<br/>9 validation suites]
+    end
+    
+    subgraph storage["Storage Layer"]
+        F[S3 Raw Data<br/>Immutable backup]
+        G[S3 Processed Data<br/>Cleaned & formatted]
+        H[Snowflake Data Warehouse<br/>7 tables ready for queries]
+    end
+    
+    subgraph ml["Machine Learning"]
+        I[ML Analysis<br/>Query Snowflake]
+        J1[Clustering<br/>HDBSCAN]
+        J2[Forecasting<br/>Prophet]
+        J3[LLM Insights<br/>Gemini API]
+        J4[Recommendations<br/>Cosine Similarity]
+    end
+    
+    subgraph cicd["CI/CD Pipeline"]
+        K[GitHub Push]
+        L[GitHub Actions]
+        M[Docker Build]
+        N[Amazon ECR]
+    end
+    
+    subgraph monitoring["Monitoring"]
+        O[CloudWatch Logs]
+    end
+    
+    A --> B
+    B --> C
+    C --> D1
+    C --> D2
+    C --> D3
+    
+    D1 --> E
     D2 --> E
     D3 --> E
     
-    E --> F[AWS S3 Raw Data]
-    F --> G[AWS S3 Processed Data]
-    G --> H[Snowflake Data Warehouse]
+    E -->|Validation Pass| F
+    E -.->|Validation Fail<br/>Pipeline Stops| O
     
-    H --> I[ML Analysis Notebooks]
-    I --> J1[Clustering]
-    I --> J2[Forecasting]
-    I --> J3[LLM Insights]
-    I --> J4[Recommendations]
+    F --> G
+    G --> H
     
-    K[GitHub Push] --> L[GitHub Actions]
-    L --> M[Docker Build]
-    M --> N[Amazon ECR]
-    N --> B
+    H --> I
+    I --> J1
+    I --> J2
+    I --> J3
+    I --> J4
     
-    O[CloudWatch Logs] -.-> B
-
+    K --> L
+    L --> M
+    M --> N
+    N -.->|Updates Image| B
+    
+    B --> O
 ```
 ## Tech Stack
 
@@ -201,48 +245,7 @@ Mental_Health_Project/
 
 ## Data Pipeline
 
-The pipeline runs weekly on Sundays at 8 AM UTC, orchestrated by Apache Airflow on AWS ECS Fargate.
-
-### Pipeline Flow
-```
-EventBridge Cron Trigger (Sunday 8 AM UTC)
-↓
-ECS Fargate starts Docker container
-↓
-Airflow initializes (SQLite metadata DB)
-↓
-DAG Execution Begins
-↓
-PARALLEL INGESTION (3 tasks run simultaneously)
-├─ ingest_reddit()     → Fetch posts from r/mentalhealth, r/depression, r/anxiety
-├─ ingest_cdc()        → Download CDC Household Pulse Survey data
-└─ ingest_trends()     → Query Google Trends for mental health keywords
-↓
-Great Expectations Validation (per source)
-├─ Schema validation (correct columns, types)
-├─ Completeness checks (no null critical fields)
-├─ Range checks (dates, numeric values)
-└─ Pipeline STOPS if validation fails
-↓
-Save to S3
-├─ Raw data → s3://mental-health-project-pipeline/raw/[source]/
-└─ Processed data → s3://mental-health-project-pipeline/processed/[source]/
-↓
-PARALLEL SNOWFLAKE LOADING (3 tasks run simultaneously)
-├─ load_cdc_to_snowflake()
-├─ load_reddit_to_snowflake()
-└─ load_trends_to_snowflake()
-↓
-Snowflake COPY INTO from S3
-├─ Deduplication (delete existing data for same date)
-├─ Load from JSON/CSV in S3
-└─ Safety checks (delete null date rows)
-↓
-Pipeline Complete
-├─ Container exits (code 0 = success)
-├─ Logs sent to CloudWatch
-└─ Fargate terminates (no ongoing costs)
-```
+> The pipeline runs weekly on Sundays at 8 AM UTC, orchestrated by Apache Airflow on AWS ECS Fargate.
 
 ### Data Sources
 
