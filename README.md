@@ -51,7 +51,7 @@ Mental health data exists across multiple scattered sources - social media discu
 | **Compute** | AWS ECS Fargate | Serverless container execution |
 | **Storage** | AWS S3 | Raw and processed data lake (7 folders: raw, processed, static) |
 | **Data Warehouse** | Snowflake | Clean, queryable datasets with separation of storage/compute |
-| **Data Validation** | Great Expectations | Automated data quality checks with 9 validation suites |
+| **Data Validation** | Great Expectations | Automated data quality checks with 7 validation suites |
 | **ML/Analytics** | scikit-learn, Prophet, Gemini API | Clustering, forecasting, LLM insights, recommendations |
 | **Backend API** | FastAPI | REST API for serving insights (basic setup complete) |
 | **Frontend** | React + Vite | Interactive dashboard (basic setup complete) |
@@ -97,7 +97,7 @@ graph TB
     end
     
     subgraph validation["Data Quality Gate"]
-        E[Great Expectations Validation<br/>9 validation suites]
+        E[Great Expectations Validation<br/>7 validation suites]
     end
     
     subgraph storage["Storage Layer"]
