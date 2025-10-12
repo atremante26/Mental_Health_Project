@@ -164,6 +164,7 @@ Mental_Health_Project/
 │   │   ├── ingest_cdc.py         # CDC Household Pulse Survey
 │   │   ├── ingest_reddit.py      # Reddit mental health subreddits
 │   │   ├── ingest_trends.py      # Google Trends data
+│   │   ├── validator.py          # Validator class for GX
 │   │   ├── static_ingestor.py    # Base class for static datasets
 │   │   └── run_static_ingestion.py # Loads 4 static datasets to Snowflake
 │   └── snowflake/
