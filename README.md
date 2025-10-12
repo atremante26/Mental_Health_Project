@@ -12,8 +12,8 @@
 
 ## Table of Contents
 - [Overview](#overview)
-- [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
 - [Project Structure](#project-structure)
 - [Data Pipeline](#data-pipeline)
 - [ML Models](#ml-models)
@@ -41,6 +41,39 @@ Mental health data exists across multiple scattered sources - social media discu
 - 🚧 API endpoints for model inference
 - 🚧 Interactive dashboard frontend
 
+--- 
+
+## Tech Stack
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Orchestration** | Apache Airflow | ETL workflow scheduling and dependency management |
+| **Compute** | AWS ECS Fargate | Serverless container execution |
+| **Storage** | AWS S3 | Raw and processed data lake (7 folders: raw, processed, static) |
+| **Data Warehouse** | Snowflake | Clean, queryable datasets with separation of storage/compute |
+| **Data Validation** | Great Expectations | Automated data quality checks with 9 validation suites |
+| **ML/Analytics** | scikit-learn, Prophet, Gemini API | Clustering, forecasting, LLM insights, recommendations |
+| **Backend API** | FastAPI | REST API for serving insights (basic setup complete) |
+| **Frontend** | React + Vite | Interactive dashboard (basic setup complete) |
+| **Infrastructure** | AWS CDK (Python) | Infrastructure as code for reproducible deployments |
+| **CI/CD** | GitHub Actions | Automated Docker build and deployment to ECR/ECS |
+| **Monitoring** | AWS CloudWatch | Pipeline execution logs and debugging |
+| **Containerization** | Docker | Consistent environments across local/dev/prod |
+| **Version Control** | Git + GitHub | Monorepo structure for full-stack project |
+
+### Language & Libraries
+
+- **Python 3.11**: Primary language for pipeline and ML
+- **praw**: Reddit API wrapper
+- **pytrends**: Google Trends API
+- **pandas**: Data transformation
+- **boto3**: AWS SDK for S3 operations
+- **snowflake-connector-python**: Snowflake integration
+- **hdbscan**: Density-based clustering
+- **prophet**: Time series forecasting
+- **google-generativeai**: Gemini LLM API
+
+--- 
 ## Architecture
 
 The platform follows a serverless, event-driven architecture for cost efficiency and scalability.
@@ -121,36 +154,7 @@ graph TB
     
     B --> O
 ```
-## Tech Stack
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Orchestration** | Apache Airflow | ETL workflow scheduling and dependency management |
-| **Compute** | AWS ECS Fargate | Serverless container execution |
-| **Storage** | AWS S3 | Raw and processed data lake (7 folders: raw, processed, static) |
-| **Data Warehouse** | Snowflake | Clean, queryable datasets with separation of storage/compute |
-| **Data Validation** | Great Expectations | Automated data quality checks with 9 validation suites |
-| **ML/Analytics** | scikit-learn, Prophet, Gemini API | Clustering, forecasting, LLM insights, recommendations |
-| **Backend API** | FastAPI | REST API for serving insights (basic setup complete) |
-| **Frontend** | React + Vite | Interactive dashboard (basic setup complete) |
-| **Infrastructure** | AWS CDK (Python) | Infrastructure as code for reproducible deployments |
-| **CI/CD** | GitHub Actions | Automated Docker build and deployment to ECR/ECS |
-| **Monitoring** | AWS CloudWatch | Pipeline execution logs and debugging |
-| **Containerization** | Docker | Consistent environments across local/dev/prod |
-| **Version Control** | Git + GitHub | Monorepo structure for full-stack project |
-
-### Language & Libraries
-
-- **Python 3.11**: Primary language for pipeline and ML
-- **praw**: Reddit API wrapper
-- **pytrends**: Google Trends API
-- **pandas**: Data transformation
-- **boto3**: AWS SDK for S3 operations
-- **snowflake-connector-python**: Snowflake integration
-- **hdbscan**: Density-based clustering
-- **prophet**: Time series forecasting
-- **google-generativeai**: Gemini LLM API
-
+---
 ## Project Structure
 ```
 Mental_Health_Project/
