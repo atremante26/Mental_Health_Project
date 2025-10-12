@@ -97,7 +97,7 @@ graph TB
     end
     
     subgraph validation["Data Quality Gate"]
-        E[Great Expectations Validation<br/>7 validation suites]
+        E[Great Expectations Validation]
     end
     
     subgraph storage["Storage Layer"]
