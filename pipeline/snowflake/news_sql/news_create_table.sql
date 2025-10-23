@@ -1,0 +1,10 @@
+USE DATABASE MENTAL_HEALTH;
+USE SCHEMA NEWS;
+USE WAREHOUSE INGEST_WH;
+
+CREATE OR REPLACE TABLE NEWS_PROCESSED (
+    date DATE,
+    article_count INT,
+    sample_headlines TEXT,
+    sources TEXT
+);

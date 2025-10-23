@@ -52,4 +52,12 @@
 		<name>action-Send</name>
 		<value>Send</value>
 	</parameter>
+	<parameter>
+		<name>stage</name>
+		<value>request</value>
+	</parameter>
+	<parameter>
+		<name>saved_id</name>
+		<value></value>
+	</parameter>
 </request-parameters>

@@ -47,6 +47,10 @@ def load_trends_to_snowflake():
     today = datetime.today().strftime("%Y-%m-%d")
     run_sql_from_file("pipeline/snowflake/trends_sql/trends_processed_load.sql", today)
 
+def load_news_to_snowflake():
+    today = datetime.today().strftime("%Y-%m-%d")
+    run_sql_from_file("pipeline/snowflake/news_sql/news_processed_load.sql", today)
+
 if __name__ == "__main__":
     load_cdc_to_snowflake()
     load_reddit_to_snowflake()

@@ -1,10 +1,10 @@
 from pipeline.ingestion import BaseIngestor
 import logging
-import time
 import pandas as pd
 import requests
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from urllib.parse import urlencode
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -33,50 +33,59 @@ class CDCIngestor(BaseIngestor):
         self.xml_request_path = Path(__file__).parent / "config/cdc_wonder_request.xml"  
 
     def load_data(self) -> pd.DataFrame:
-        max_retries = 3
-        retry_delay = 60
-        
-        for attempt in range(max_retries):
-            try:
-                logger.info(f"Loading CDC WONDER request XML (attempt {attempt + 1}/{max_retries})")
-                with open(self.xml_request_path, 'r') as f:
-                    xml_request = f.read()
-                
-                logger.info("Sending request to CDC WONDER API...")
-                headers = {'Content-Type': 'application/xml'}
-                
-                response = requests.post(
-                    self.api_url, 
-                    data=xml_request, 
-                    headers=headers, 
-                    timeout=120
-                )
-                response.raise_for_status()
-                
-                # Parse XML response
-                root = ET.fromstring(response.content)
-                data_rows = []
-                for row in root.findall('.//r'):
-                    row_data = {}
-                    for cell in row.findall('./c'):
-                        label = cell.get('l', '')
-                        value = cell.get('v', '')
-                        row_data[label] = value
-                    data_rows.append(row_data)
-                
-                df = pd.DataFrame(data_rows)
-                logger.info(f"Fetched {len(df)} records from CDC WONDER on {self.today}")
-                return df
-                
-            except requests.exceptions.RequestException as e:
-                logger.warning(f"Attempt {attempt + 1} failed: {e}")
-                if attempt < max_retries - 1:
-                    logger.info(f"Retrying in {retry_delay} seconds...")
-                    time.sleep(retry_delay)
-                else:
-                    logger.error(f"Failed to fetch CDC WONDER data after {max_retries} attempts")
-                    raise
-                
+        try:
+            logger.info("Loading CDC WONDER request XML...")
+            with open(self.xml_request_path, 'r') as f:
+                xml_request = f.read()
+            
+            logger.info("Sending request to CDC WONDER API...")
+            
+            # Key insight from the repo: send XML as form-encoded data with 'request_xml' parameter
+            data = {
+                'request_xml': xml_request,
+                'accept_datause_restrictions': 'true'
+            }
+            
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': 'Mozilla/5.0'
+            }
+            
+            response = requests.post(
+                self.api_url,
+                data=urlencode(data),
+                headers=headers,
+                timeout=120
+            )
+            
+            logger.info(f"Response status: {response.status_code}")
+
+            # Add these debug lines
+            print(f"DEBUG: Response content:\n{response.text[:1000]}")
+            
+            response.raise_for_status()
+            
+            # Parse XML response
+            root = ET.fromstring(response.content)
+            
+            # Extract data rows
+            data_rows = []
+            for row in root.findall('.//r'):
+                row_data = {}
+                for cell in row.findall('./c'):
+                    label = cell.get('l', '')
+                    value = cell.get('v', '')
+                    row_data[label] = value
+                data_rows.append(row_data)
+            
+            df = pd.DataFrame(data_rows)
+            logger.info(f"Fetched {len(df)} records from CDC WONDER on {self.today}")
+            return df
+            
+        except Exception as e:
+            logger.error(f"Failed to fetch CDC WONDER data: {e}")
+            raise
+                    
     def process_data(self, df):
         processed_df = df.copy()
         

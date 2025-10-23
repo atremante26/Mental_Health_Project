@@ -1,6 +1,7 @@
 import logging
 import pandas as pd
 import great_expectations as gx
+from pathlib import Path
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -13,8 +14,15 @@ class Validator():
     def validate(self, df: pd.DataFrame, suite_name: str):
         """Perform data validation with Great Expectations"""
         try:
+            if Path('/opt/airflow').exists():
+                project_root = '/opt/airflow' # Docker path
+            else:
+                project_root = Path(__file__).parent.parent.parent # Local path
+        
+            logger.info(f"Using GX project root: {project_root}")
+
             # Get context and load existing suite
-            context = gx.get_context(project_root_dir='/opt/airflow') # Use /opt/airflow as project root
+            context = gx.get_context(project_root_dir=str(project_root))
             suite = context.get_expectation_suite(expectation_suite_name=suite_name)
             
             # Create validator with existing suite
