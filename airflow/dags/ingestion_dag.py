@@ -4,10 +4,12 @@ from datetime import datetime, timedelta
 from pipeline.ingestion.ingest_cdc import CDCIngestor
 from pipeline.ingestion.ingest_reddit import RedditIngestor
 from pipeline.ingestion.ingest_trends import GoogleTrendsIngestor
+from pipeline.ingestion.ingest_news import NewsIngestor
 from pipeline.snowflake.load_snowflake import (
     load_cdc_to_snowflake,
     load_reddit_to_snowflake,
-    load_trends_to_snowflake
+    load_trends_to_snowflake,
+    load_news_to_snowflake
 )
 
 default_args = {
@@ -25,6 +27,9 @@ def run_reddit():
 def run_trends():
     GoogleTrendsIngestor().run("trends", "trends_suite", save_s3=True, save_local=False)
 
+def ingest_news():
+    NewsIngestor().run("news", "news_suite", save_s3=True, save_local=False)
+
 with DAG(
     dag_id="ingestion_dag",
     default_args=default_args,
@@ -34,10 +39,10 @@ with DAG(
     tags=["mental_health"],
 ) as dag:
     
-    ingest_cdc_task = PythonOperator(
-        task_id='ingest_cdc',
-        python_callable=run_cdc
-    )
+    #ingest_cdc_task = PythonOperator(
+        #task_id='ingest_cdc',
+        #python_callable=run_cdc
+    #)
 
     ingest_reddit_task = PythonOperator(
         task_id='ingest_reddit',
@@ -49,10 +54,15 @@ with DAG(
         # python_callable=run_trends,
     # )
 
-    load_cdc_task = PythonOperator(
-        task_id='load_cdc_to_snowflake',
-        python_callable=load_cdc_to_snowflake
+    ingest_news_task = PythonOperator(
+        task_id='ingest_news',
+        python_callable=ingest_news
     )
+
+    #load_cdc_task = PythonOperator(
+        #task_id='load_cdc_to_snowflake',
+       # python_callable=load_cdc_to_snowflake
+    #)
 
     load_reddit_task = PythonOperator(
         task_id='load_reddit_to_snowflake',
@@ -64,6 +74,12 @@ with DAG(
         # python_callable=load_trends_to_snowflake
     # )
 
-    ingest_cdc_task >> load_cdc_task
+    load_news_task = PythonOperator(
+        task_id='load_news_to_snowflake',
+        python_callable=load_news_to_snowflake
+    )
+
+    #ingest_cdc_task >> load_cdc_task
     ingest_reddit_task >> load_reddit_task
     # ingest_trends_task >> load_trends_task
+    ingest_news_task >> load_news_task

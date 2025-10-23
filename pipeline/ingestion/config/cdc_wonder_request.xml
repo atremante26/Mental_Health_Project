@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<request-parameters>
+	<parameter>
+		<name>B_1</name>
+		<value>D176.V1-level2</value>
+	</parameter>
+	<parameter>
+		<name>B_2</name>
+		<value>*None*</value>
+	</parameter>
+	<parameter>
+		<name>B_3</name>
+		<value>*None*</value>
+	</parameter>
+	<parameter>
+		<name>B_4</name>
+		<value>*None*</value>
+	</parameter>
+	<parameter>
+		<name>B_5</name>
+		<value>*None*</value>
+	</parameter>
+	<parameter>
+		<name>M_1</name>
+		<value>D176.M1</value>
+	</parameter>
+	<parameter>
+		<name>M_2</name>
+		<value>D176.M2</value>
+	</parameter>
+	<parameter>
+		<name>F_D176.V2</name>
+		<value>X60-X84</value>
+	</parameter>
+	<parameter>
+		<name>I_D176.V2</name>
+		<value>X60-X84 (Intentional self-harm)</value>
+	</parameter>
+	<parameter>
+		<name>O_V1_fmode</name>
+		<value>freg</value>
+	</parameter>
+	<parameter>
+		<name>O_show_totals</name>
+		<value>true</value>
+	</parameter>
+	<parameter>
+		<name>O_timeout</name>
+		<value>600</value>
+	</parameter>
+	<parameter>
+		<name>action-Send</name>
+		<value>Send</value>
+	</parameter>
+</request-parameters>

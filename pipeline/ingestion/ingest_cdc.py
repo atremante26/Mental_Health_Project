@@ -1,43 +1,126 @@
 from pipeline.ingestion import BaseIngestor
 import logging
+import time
 import pandas as pd
+import requests
+import xml.etree.ElementTree as ET
+from pathlib import Path
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
+# US Population for calculating crude rates
+POPULATION_BY_YEAR = {
+    2018: 327_167_434,  
+    2019: 328_239_523,  
+    2020: 331_449_281,  
+    2021: 331_893_745,  
+    2022: 333_287_557,  
+    2023: 334_914_895, 
+    2024: 336_673_595,  
+    2025: 342_694_430,  
+    2026: 344_500_000,  # Projection
+    2027: 346_300_000,  # Projection
+    2028: 348_100_000,  # Projection
+    2029: 349_900_000,  # Projection
+    2030: 351_700_000   # Projection
+}
+
 class CDCIngestor(BaseIngestor):
     def __init__(self):
         super().__init__()
-        self.csv_url = "https://data.cdc.gov/api/views/8pt5-q6wp/rows.csv?accessType=DOWNLOAD"
+        self.api_url = "https://wonder.cdc.gov/controller/datarequest/D176"
+        self.xml_request_path = Path(__file__).parent / "config/cdc_wonder_request.xml"  
 
     def load_data(self) -> pd.DataFrame:
-        try:
-            df = pd.read_csv(self.csv_url)
-        except:
-            logger.info(f"Failed to read CSV data on {self.today} from {self.csv_url}")
+        max_retries = 3
+        retry_delay = 60
         
-        return df
-
+        for attempt in range(max_retries):
+            try:
+                logger.info(f"Loading CDC WONDER request XML (attempt {attempt + 1}/{max_retries})")
+                with open(self.xml_request_path, 'r') as f:
+                    xml_request = f.read()
+                
+                logger.info("Sending request to CDC WONDER API...")
+                headers = {'Content-Type': 'application/xml'}
+                
+                response = requests.post(
+                    self.api_url, 
+                    data=xml_request, 
+                    headers=headers, 
+                    timeout=120
+                )
+                response.raise_for_status()
+                
+                # Parse XML response
+                root = ET.fromstring(response.content)
+                data_rows = []
+                for row in root.findall('.//r'):
+                    row_data = {}
+                    for cell in row.findall('./c'):
+                        label = cell.get('l', '')
+                        value = cell.get('v', '')
+                        row_data[label] = value
+                    data_rows.append(row_data)
+                
+                df = pd.DataFrame(data_rows)
+                logger.info(f"Fetched {len(df)} records from CDC WONDER on {self.today}")
+                return df
+                
+            except requests.exceptions.RequestException as e:
+                logger.warning(f"Attempt {attempt + 1} failed: {e}")
+                if attempt < max_retries - 1:
+                    logger.info(f"Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                else:
+                    logger.error(f"Failed to fetch CDC WONDER data after {max_retries} attempts")
+                    raise
+                
     def process_data(self, df):
-        # Filter
-        df = df[(df['Group'] == 'National Estimate') & (df['Subgroup'] == 'United States')]
-        df = df[['Time Period Start Date', 'Indicator', 'Value']]
+        processed_df = df.copy()
+        
+        # Parse month column (format: "Jan., 2018")
+        if 'Month' in processed_df.columns:
+            processed_df['date'] = pd.to_datetime(
+                processed_df['Month'].str.replace('.', ''), 
+                format='%b, %Y',
+                errors='coerce'
+            )
+        
+        # Convert deaths to numeric
+        if 'Deaths' in processed_df.columns:
+            processed_df['deaths'] = pd.to_numeric(
+                processed_df['Deaths'].str.replace(',', ''), 
+                errors='coerce'
+            )
+        
+        # Get population for each row based on year
+        processed_df['year'] = processed_df['date'].dt.year
+        processed_df['population'] = processed_df['year'].map(
+            lambda year: POPULATION_BY_YEAR.get(year, POPULATION_BY_YEAR[max(POPULATION_BY_YEAR.keys())])
+        )
+        processed_df['monthly_population'] = processed_df['population'] / 12
 
-        # Pivot
-        df = df.pivot(index='Time Period Start Date', columns='Indicator', values='Value')
-        df = df.rename_axis(None, axis=1).reset_index()
-        df = df.rename(columns={'Time Period Start Date': 'date'})
-        df = df.rename(columns={
-            'Symptoms of Anxiety Disorder': 'anxiety',
-            'Symptoms of Depressive Disorder': 'depression',
-            'Symptoms of Anxiety Disorder or Depressive Disorder': 'anxiety_or_depression'
-        })
-        df = df.dropna()
+        # Calculate crude suicide rate per 100,000
+        processed_df['suicide_rate'] = (
+            (processed_df['deaths'] / processed_df['monthly_population']) * 100000
+        ).round(1)
+        
+        # Select final columns
+        processed_df = processed_df[['date', 'suicide_rate']]
+        
+        # Remove rows with missing data
+        processed_df = processed_df.dropna(subset=['date'])
+        
+        # Sort by date
+        processed_df = processed_df.sort_values('date')
+        
+        logger.info(f"Processed {len(processed_df)} data points")
+        logger.info(f"Date range: {processed_df['date'].min()} to {processed_df['date'].max()}")
+        
+        return processed_df
 
-        for col in ['anxiety', 'depression', 'anxiety_or_depression']:
-            if col in df:
-                df[col] = df[col].round(1)
-        return df
     
 if __name__ == "__main__":
     cdc_ingestor = CDCIngestor()

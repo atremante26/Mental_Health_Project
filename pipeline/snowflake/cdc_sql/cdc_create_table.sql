@@ -1,7 +1,5 @@
--- Create table for CDC processed data
+-- Create CDC processed table
 CREATE OR REPLACE TABLE MENTAL_HEALTH.CDC.CDC_PROCESSED (
     date DATE,
-    anxiety FLOAT,
-    depression FLOAT,
-    anxiety_or_depression FLOAT
+    suicide_rate FLOAT
 );
