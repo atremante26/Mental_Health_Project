@@ -120,6 +120,8 @@ class MentalHealthStack(Stack):
                 "REDDIT_USERNAME": os.getenv("REDDIT_USERNAME"),
                 "REDDIT_PASSWORD": os.getenv("REDDIT_PASSWORD"),
                 "REDDIT_USER_AGENT": os.getenv("REDDIT_USER_AGENT"),
+                # News API
+                "NEWS_API_KEY": os.getenv("NEWS_API_KEY"),
             },
             # Command to run Airflow DAG once
             command=[
