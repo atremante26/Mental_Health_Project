@@ -4,25 +4,42 @@ from datetime import datetime
 from dotenv import load_dotenv
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
+from pathlib import Path
 
 load_dotenv()
 
 # Create the connection
 def snowflake_connection():
-    with open(os.getenv("SNOWFLAKE_PRIVATE_KEY_PATH"), 'rb') as key:
-        private_key = serialization.load_pem_private_key(
+    # Determine the correct key path based on environment
+    env_key_path = os.getenv("SNOWFLAKE_PRIVATE_KEY_PATH")
+    
+    if Path('/opt/airflow').exists():
+        # Running in Docker - use Docker path
+        key_path = '/opt/airflow/keys/rsa_key.p8'
+    else:
+        # Running locally - use env variable
+        key_path = env_key_path
+    
+    with open(key_path, 'rb') as key:
+        p_key = serialization.load_pem_private_key(
             key.read(),
             password=None,
             backend=default_backend()
         )
-    
+
+    pkb = p_key.private_bytes(
+        encoding=serialization.Encoding.DER,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+
     return snowflake.connector.connect(
         user=os.getenv("SNOWFLAKE_USER"),
         account=os.getenv("SNOWFLAKE_ACCOUNT"),
-        private_key=private_key,
         warehouse=os.getenv("SNOWFLAKE_WAREHOUSE"),
         database=os.getenv("SNOWFLAKE_DATABASE"),
-        role=os.getenv("SNOWFLAKE_ROLE"),
+        schema=os.getenv("SNOWFLAKE_SCHEMA"),
+        private_key=pkb
     )
 
 # Run SQL queries
