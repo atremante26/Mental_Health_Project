@@ -3,12 +3,6 @@ name: CI/CD Pipeline
 on: # When to run this workflow                                            
   push:
     branches: [ main ] # When code is pushed to main branch
-    paths: 
-      - 'pipeline/**'
-      - 'airflow/**' 
-      - 'gx/**'
-      - 'requirements.txt'
-      - '.github/workflows/**'
   workflow_dispatch:
 
 env: # Sets environment
