@@ -7,7 +7,7 @@ on: # When to run this workflow
 
 env: # Sets environment
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: mental-health-data-pipeline
+  ECR_REPOSITORY: mental-health-pipeline
 
 jobs: # Different tasks to run
   test: # First task: run tests
