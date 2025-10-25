@@ -59,7 +59,7 @@ jobs:
           aws ecr describe-repositories --repository-names $ECR_REPOSITORY || \
           aws ecr create-repository --repository-name $ECR_REPOSITORY
 
-      - name: Build and push pipeline image
+      - name: Build and push data pipeline image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
@@ -77,10 +77,13 @@ jobs:
           COPY pipeline /opt/airflow/pipeline
           COPY gx /opt/airflow/gx
           COPY airflow/dags /opt/airflow/dags
+          COPY airflow/keys /opt/airflow/keys
           
-          # Fix permissions for GX directory
+          # Fix permissions
           RUN chown -R airflow:root /opt/airflow/gx && \
-              chmod -R 775 /opt/airflow/gx
+              chmod -R 775 /opt/airflow/gx && \
+              chown -R airflow:root /opt/airflow/keys && \
+              chmod 600 /opt/airflow/keys/rsa_key.p8
           
           # Switch back to airflow user
           USER airflow
