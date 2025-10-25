@@ -123,11 +123,10 @@ class MentalHealthStack(Stack):
                 # News API
                 "NEWS_API_KEY": os.getenv("NEWS_API_KEY"),
             },
-            # Command to run Airflow DAG once
-            command=[
-                "/bin/bash", "-c",
-                "airflow db init && airflow dags test ingestion_dag $(date +%Y-%m-%d)"
-            ]
+            # Override the entrypoint
+            entry_point=["/bin/bash", "-c"],
+            # Command 
+            command=["airflow db init && airflow dags test ingestion_dag $(date +%Y-%m-%d)"]
         )
         
          # Create EventBridge rule for weekly execution (cron job in the cloud)

@@ -59,7 +59,7 @@ jobs: # Different tasks to run
           aws ecr describe-repositories --repository-names $ECR_REPOSITORY || \
           aws ecr create-repository --repository-name $ECR_REPOSITORY
 
-      - name: Build and push data pipeline image # Update to AWS storage
+      - name: Build and push data pipeline image # Upload to AWS storage
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
@@ -68,6 +68,8 @@ jobs: # Different tasks to run
           cat > Dockerfile << 'EOF'
           FROM apache/airflow:2.9.1-python3.9
           
+          USER root
+          
           COPY requirements.txt /requirements.txt
           RUN pip install -r /requirements.txt
           
@@ -75,6 +77,11 @@ jobs: # Different tasks to run
           COPY gx /opt/airflow/gx
           COPY airflow/dags /opt/airflow/dags
           
+          # Fix permissions for GX directory
+          RUN chown -R airflow:root /opt/airflow/gx && \
+              chmod -R 775 /opt/airflow/gx
+          
+          USER airflow
           WORKDIR /opt/airflow
           EOF
           
