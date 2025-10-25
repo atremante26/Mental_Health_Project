@@ -1,31 +1,31 @@
 name: CI/CD Pipeline
 
-on: # When to run this workflow                                            
+on:
   push:
-    branches: [ main ] # When code is pushed to main branch
+    branches: [ main ]
   workflow_dispatch:
 
-env: # Sets environment
+env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: mental-health-pipeline
 
-jobs: # Different tasks to run
-  test: # First task: run tests
-    runs-on: ubuntu-latest # Use Ubuntu server
+jobs:
+  test:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code # Download code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python # Install Python
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Install dependencies # Install Python packages
+      - name: Install dependencies
         run: |
           pip install -r requirements.txt
 
-      - name: Test Great Expectations suites # Test GX (confirm validation works)
+      - name: Test Great Expectations suites
         run: |
           python -c "
           import great_expectations as gx
@@ -35,31 +35,31 @@ jobs: # Different tasks to run
           print(f'✓ Found {len(suites)} expectation suites')
           "
 
-  build-and-push: # Second job: build Docker image
-    needs: test # Run only if tests pass
+  build-and-push:
+    needs: test
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code # Download code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials # Access AWS credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
  
-      - name: Login to Amazon ECR # Login to AWS
+      - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Create ECR repository if it doesn't exist # Create AWS storage
+      - name: Create ECR repository if it doesn't exist
         run: |
           aws ecr describe-repositories --repository-names $ECR_REPOSITORY || \
           aws ecr create-repository --repository-name $ECR_REPOSITORY
 
-      - name: Build and push data pipeline image # Upload to AWS storage
+      - name: Build and push pipeline image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
@@ -68,11 +68,12 @@ jobs: # Different tasks to run
           cat > Dockerfile << 'EOF'
           FROM apache/airflow:2.9.1-python3.9
           
-          USER root
-          
+          # Install Python packages as airflow user (default)
           COPY requirements.txt /requirements.txt
-          RUN pip install -r /requirements.txt
+          RUN pip install --no-cache-dir -r /requirements.txt
           
+          # Switch to root to copy files and fix permissions
+          USER root
           COPY pipeline /opt/airflow/pipeline
           COPY gx /opt/airflow/gx
           COPY airflow/dags /opt/airflow/dags
@@ -81,6 +82,7 @@ jobs: # Different tasks to run
           RUN chown -R airflow:root /opt/airflow/gx && \
               chmod -R 775 /opt/airflow/gx
           
+          # Switch back to airflow user
           USER airflow
           WORKDIR /opt/airflow
           EOF
