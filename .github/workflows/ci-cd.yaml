@@ -79,8 +79,7 @@ jobs:
           COPY airflow/dags /opt/airflow/dags
           
           # Fix permissions
-          RUN chown -R airflow:root /opt/airflow/gx && \
-              chmod -R 775 /opt/airflow/gx && \
+          RUN chown -R airflow:root /opt/airflow/gx && chmod -R 775 /opt/airflow/gx
           
           # Switch back to airflow user
           USER airflow
