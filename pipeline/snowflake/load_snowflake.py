@@ -5,42 +5,46 @@ from dotenv import load_dotenv
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 from pathlib import Path
+import boto3
 
 load_dotenv()
 
 # Create the connection
 def snowflake_connection():
-    # Determine the correct key path based on environment
-    env_key_path = os.getenv("SNOWFLAKE_PRIVATE_KEY_PATH")
     
-    if Path('/opt/airflow').exists():
-        # Running in Docker - use Docker path
-        key_path = '/opt/airflow/keys/rsa_key.p8'
-    else:
-        # Running locally - use env variable
-        key_path = env_key_path
+    # Get private key from AWS Parameter Store
+    ssm = boto3.client('ssm', region_name='us-east-1')
+    response = ssm.get_parameter(
+        Name='/mental-health-pipeline/snowflake/private-key',
+        WithDecryption=True
+    )
+    private_key_pem = response['Parameter']['Value'].encode()
     
-    with open(key_path, 'rb') as key:
-        p_key = serialization.load_pem_private_key(
-            key.read(),
-            password=None,
-            backend=default_backend()
-        )
-
-    pkb = p_key.private_bytes(
+    # Load the private key
+    private_key = serialization.load_pem_private_key(
+        private_key_pem,
+        password=None,
+        backend=default_backend()
+    )
+    
+    # Convert to bytes for Snowflake
+    pkb = private_key.private_bytes(
         encoding=serialization.Encoding.DER,
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption()
     )
-
-    return snowflake.connector.connect(
+    
+    # Connect to Snowflake
+    conn = snowflake.connector.connect(
         user=os.getenv("SNOWFLAKE_USER"),
         account=os.getenv("SNOWFLAKE_ACCOUNT"),
         warehouse=os.getenv("SNOWFLAKE_WAREHOUSE"),
         database=os.getenv("SNOWFLAKE_DATABASE"),
-        schema=os.getenv("SNOWFLAKE_SCHEMA"),
+        role=os.getenv("SNOWFLAKE_ROLE"),
         private_key=pkb
     )
+    
+    return conn
 
 # Run SQL queries
 def run_sql_from_file(filepath: str, date: str):

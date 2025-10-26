@@ -82,6 +82,17 @@ class MentalHealthStack(Stack):
                 "arn:aws:s3:::mental-health-project-pipeline/*" # all objects in the bucket
             ]
         ))
+        # Give container permissions for SSM Parameter Store
+        task_role.add_to_policy(iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            actions=[
+                "ssm:GetParameter",
+                "ssm:GetParameters"
+            ],
+            resources=[
+                f"arn:aws:ssm:{self.region}:{self.account}:parameter/mental-health-pipeline/*"
+            ]
+        ))
 
         # Create Fargate task definition
         task_definition = ecs.FargateTaskDefinition(
@@ -125,7 +136,7 @@ class MentalHealthStack(Stack):
             },
             # Override the entrypoint
             entry_point=["/bin/bash", "-c"],
-            # Command 
+            # Command
             command=["airflow db init && airflow dags test ingestion_dag $(date +%Y-%m-%d)"]
         )
         

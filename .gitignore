@@ -28,10 +28,10 @@ frontend/.vite/
 # ----------------------
 # Airflow
 # ----------------------
-#airflow/keys/
-#*.p8
-#*.pem
-#rsa_key*
+airflow/keys/
+*.p8
+*.pem
+rsa_key*
 
 # ----------------------
 # Great Expectations

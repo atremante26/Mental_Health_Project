@@ -77,13 +77,10 @@ jobs:
           COPY pipeline /opt/airflow/pipeline
           COPY gx /opt/airflow/gx
           COPY airflow/dags /opt/airflow/dags
-          COPY airflow/keys /opt/airflow/keys
           
           # Fix permissions
           RUN chown -R airflow:root /opt/airflow/gx && \
               chmod -R 775 /opt/airflow/gx && \
-              chown -R airflow:root /opt/airflow/keys && \
-              chmod 600 /opt/airflow/keys/rsa_key.p8
           
           # Switch back to airflow user
           USER airflow
