@@ -23,10 +23,10 @@ snowflake-connector-python>=3.4.0,<4.0.0
 snowflake-sqlalchemy>=1.4.7,<2.0.0
 cryptography
 great_expectations==0.17.20
-#scikit-learn
-#gower
-#hdbscan
-#seaborn
-#matplotlib
-#google-generativeai
-#prophet
+scikit-learn
+gower
+hdbscan
+seaborn
+matplotlib
+google-generativeai
+prophet
