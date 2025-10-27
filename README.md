@@ -28,9 +28,9 @@ Mental health data exists across multiple scattered sources - social media discu
 
 ### Currently Completed
 
-- ✅ **Automated Data Pipeline**: Weekly ingestion from 3 live APIs (Reddit, CDC, Google Trends)
+- ✅ **Automated Data Pipeline**: Weekly ingestion from 2 live APIs (Reddit, News API)
 - ✅ **Data Validation**: 7 Great Expectations suites ensuring data quality
-- ✅ **Data Warehouse**: 7 datasets in Snowflake (3 live, 4 static)
+- ✅ **Data Warehouse**: 7 datasets in Snowflake (2 live, 4 static)
 - ✅ **Serverless Architecture**: Runs on AWS ECS Fargate (cost-friendly)
 - ✅ **CI/CD Pipeline**: Automated deployment via GitHub Actions
 - ✅ **ML Models**: 4 models validated on production data
