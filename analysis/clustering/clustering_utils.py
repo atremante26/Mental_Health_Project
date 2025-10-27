@@ -21,16 +21,26 @@ def run_hdbscan_clustering(distance_matrix, min_cluster_size=15, min_samples=10)
     return clusterer, cluster_labels
 
 def evaluate_clustering(distance_matrix, cluster_labels):
-    """Evaluate clustering quality"""
-    # Remove noise points (-1 labels) for silhouette score
+    # Filter out noise points
     non_noise_mask = cluster_labels != -1
     
-    if len(np.unique(cluster_labels[non_noise_mask])) < 2:
+    if sum(non_noise_mask) < 2:
+        logger.warning("Less than 2 non-noise points, cannot compute silhouette score")
+        return None
+    
+    n_clusters = len(set(cluster_labels[non_noise_mask]))
+    if n_clusters < 2:
         logger.warning("Less than 2 clusters found, cannot compute silhouette score")
         return None
     
+    # Extract distance matrix for non-noise points
+    filtered_distance = distance_matrix[non_noise_mask][:, non_noise_mask]
+    
+    # Diagonal is exactly zero for precomputed distances
+    np.fill_diagonal(filtered_distance, 0)
+    
     silhouette_avg = silhouette_score(
-        1 - distance_matrix[non_noise_mask][:, non_noise_mask], 
+        filtered_distance,
         cluster_labels[non_noise_mask], 
         metric='precomputed'
     )

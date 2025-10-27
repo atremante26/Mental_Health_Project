@@ -9,7 +9,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def prepare_clustering_features(df, categorical_cols, numeric_cols):
-    """Prepare features for clustering with mixed data types"""
     # Select only relevant columns
     feature_df = df[categorical_cols + numeric_cols].copy()
     
@@ -30,7 +29,6 @@ def prepare_clustering_features(df, categorical_cols, numeric_cols):
     return feature_df, le_dict, scaler
 
 def compute_gower_distance(df, categorical_indices):
-    """Compute Gower distance matrix for mixed data types"""
     # Create categorical mask
     cat_features = [i in categorical_indices for i in range(df.shape[1])]
     

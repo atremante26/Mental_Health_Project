@@ -1,12 +1,15 @@
 # Clustering configuration
 CLUSTERING_CONFIG = {
     'hdbscan': {
-        'min_cluster_size': 50,
-        'min_samples': 10,
+        'min_cluster_size': 25,
+        'min_samples': 4,
         'cluster_selection_epsilon': 0.1
     },
     'preprocessing': {
-        'categorical_columns': ['Gender', 'Country', 'state', 'treatment'],
+        'categorical_columns': [
+            'Gender', 'Country', 'treatment', 'work_interfere',
+            'family_history', 'remote_work', 'mental_health_consequence', 'benefits'
+        ],
         'numeric_columns': ['Age'],
         'scale_numeric': True
     }
