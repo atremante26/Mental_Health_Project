@@ -1,40 +1,63 @@
-from fastapi import FastAPI # import FastAPI framework
-from fastapi.middleware.cors import CORSMiddleware # import CORS middleware to allow cross-origin requests from frontend
-import os
-import json
+import logging
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
+from routers import clustering
+from services.clustering_service import ClusteringService
 
-app = FastAPI() # Create FastAPI instance
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-# Allow localhost frontend to access backend
+# Global service instances
+clustering_service = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    global clustering_service
+    logger.info("Starting up: Loading models...")
+    clustering_service = ClusteringService()
+    clustering_service.load_models()
+    
+    yield
+    
+    # Shutdown
+    logger.info("Shutting down...")
+
+app = FastAPI(
+    title="MindPulse API",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",                # local frontend dev
-        "https://atremante26.github.io",        # GitHub Pages
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/health") # GET endpoint of path /health
-def health_check():
-    return {"status": "ok"}
+# Register routers
+app.include_router(clustering.router, prefix="/api", tags=["clustering"])
 
-@app.get("/insights") # Placeholder API endpoint for insights
-def get_insights():
-    file_path = os.path.join(os.path.dirname(__file__), "data", "insights.json")
-    with open(file_path, "r") as f:
-        data = json.load(f)
-    return data
+@app.get("/")
+def root():
+    return {
+        "message": "MindPulse API",
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
 
-@app.get("/timeseries")
-def get_timeseries():
-    file_path = os.path.join(os.path.dirname(__file__), "../data/processed/cdc_timeseries.json")
-    try:
-        with open(file_path, "r") as f:
-            data = json.load(f)
-        return data
-    except Exception as e:
-        return {"error": f"Could not load timeseries data: {e}"}
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy",
+        "clustering_loaded": clustering_service.is_loaded() if clustering_service else False
+    }

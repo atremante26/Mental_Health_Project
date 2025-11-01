@@ -12,3 +12,7 @@ typing-inspection==0.4.1
 typing_extensions==4.14.0
 uvicorn==0.34.3
 pandas
+python-dotenv
+numpy
+scikit-learn
+hdbscan
