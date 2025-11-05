@@ -31,8 +31,8 @@ def get_cluster_detail(cluster_id: int, service = Depends(get_clustering_service
         logger.error(f"Error in get_cluster_detail: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/clusters/predict", response_model=PredictionResponse)
-def predict_cluster(user_input: UserInput, service = Depends(get_clustering_service)):
+@router.post("/clusters/predict", response_model=PredictionResponse) # this endpoint returns a PredictionResponse object
+def predict_cluster(user_input: UserInput, service = Depends(get_clustering_service)): # Dependency Injection (call get_clustering_service() and pass result as 'service')
     try:
         return service.predict_cluster(user_input.model_dump())
     except Exception as e:
