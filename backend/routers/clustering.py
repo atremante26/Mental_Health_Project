@@ -34,7 +34,7 @@ def get_cluster_detail(cluster_id: int, service = Depends(get_clustering_service
 @router.post("/clusters/predict", response_model=PredictionResponse)
 def predict_cluster(user_input: UserInput, service = Depends(get_clustering_service)):
     try:
-        return service.predict_cluster(user_input.dict())
+        return service.predict_cluster(user_input.model_dump())
     except Exception as e:
         logger.error(f"Error in predict_cluster: {e}")
         raise HTTPException(status_code=500, detail=str(e))
