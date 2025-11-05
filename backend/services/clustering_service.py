@@ -63,6 +63,8 @@ class ClusteringService:
             cluster_size = int(np.sum(labels == label))
             cluster_pct = float(cluster_size / len(labels) * 100)
             profile = cluster_profiles.get(label, {})
+            if not isinstance(profile, dict):
+                profile = {}
             
             clusters.append({
                 "cluster_id": int(label),
