@@ -128,11 +128,9 @@ graph TB
     B --> C
     C --> D1
     C --> D2
-    C --> D3
     
     D1 --> E
     D2 --> E
-    D3 --> E
     
     E -->|Validation Pass| F
     E -.->|Validation Fail<br/>Pipeline Stops| O
